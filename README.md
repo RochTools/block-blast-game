@@ -4,7 +4,7 @@ A fast, offline-ready Progressive Web App (PWA) puzzle game with 3D visuals and 
 
 Made by StepTudeen.
 
-**Live game:** [Add link here]
+**Live game:** [https://rochtools.github.io/block-blast-game/]
 
 ---
 
