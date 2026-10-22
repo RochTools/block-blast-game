@@ -1,5 +1,5 @@
 /* Block Blast 3D – service worker (offline cache) */
-const CACHE = "block-blast-v4";
+const CACHE = "block-blast-v6";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,7 +8,13 @@ const ASSETS = [
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
   "./icons/apple-touch-icon.png",
-  "./icons/favicon-32.png"
+  "./icons/favicon-32.png",
+  "./sounds/pick.mp3",
+  "./sounds/place.mp3",
+  "./sounds/clear.mp3",
+  "./sounds/bad.mp3",
+  "./sounds/gameover.mp3",
+  "./sounds/click.mp3"
 ];
 
 self.addEventListener("install", (e) => {
@@ -27,16 +33,15 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
 
-  // Network first (always latest version when online), cache fallback (offline)
+  // Stale-while-revalidate: cache se foran kholo (tez), background me naya version le kar cache update karo
   e.respondWith(
-    fetch(req)
-      .then((res) => {
-        if (res && res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-        }
-        return res;
+    caches.open(CACHE).then((c) =>
+      c.match(req, { ignoreSearch: true }).then((hit) => {
+        const net = fetch(req)
+          .then((res) => { if (res && res.ok) c.put(req, res.clone()); return res; })
+          .catch(() => hit || c.match("./index.html"));
+        return hit || net;
       })
-      .catch(() => caches.match(req, { ignoreSearch: true }).then((hit) => hit || caches.match("./index.html")))
+    )
   );
 });
