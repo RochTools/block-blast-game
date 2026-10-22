@@ -1,5 +1,5 @@
 /* Block Blast 3D – service worker (offline cache) */
-const CACHE = "block-blast-v9";
+const CACHE = "block-blast-v10";
 const ASSETS = [
   "./",
   "./index.html",
@@ -10,30 +10,6 @@ const ASSETS = [
   "./icons/apple-touch-icon.png",
   "./icons/favicon-32.png",
   "./images/block.webp",
-  "./images/blocks/glossy/red.webp",
-  "./images/blocks/glossy/orange.webp",
-  "./images/blocks/glossy/yellow.webp",
-  "./images/blocks/glossy/green.webp",
-  "./images/blocks/glossy/cyan.webp",
-  "./images/blocks/glossy/blue.webp",
-  "./images/blocks/glossy/purple.webp",
-  "./images/blocks/glossy/pink.webp",
-  "./images/blocks/gem/red.webp",
-  "./images/blocks/gem/orange.webp",
-  "./images/blocks/gem/yellow.webp",
-  "./images/blocks/gem/green.webp",
-  "./images/blocks/gem/cyan.webp",
-  "./images/blocks/gem/blue.webp",
-  "./images/blocks/gem/purple.webp",
-  "./images/blocks/gem/pink.webp",
-  "./images/blocks/stone/red.webp",
-  "./images/blocks/stone/orange.webp",
-  "./images/blocks/stone/yellow.webp",
-  "./images/blocks/stone/green.webp",
-  "./images/blocks/stone/cyan.webp",
-  "./images/blocks/stone/blue.webp",
-  "./images/blocks/stone/purple.webp",
-  "./images/blocks/stone/pink.webp",
   "./sounds/pick.mp3",
   "./sounds/place.mp3",
   "./sounds/clear.mp3",
@@ -42,8 +18,25 @@ const ASSETS = [
   "./sounds/click.mp3"
 ];
 
+/* baca images/blocks/styles.json lalu simpan semua gambar blok untuk offline */
+const BLOCK_COLORS = ["red", "orange", "yellow", "green", "cyan", "blue", "purple", "pink"];
+function precacheBlocks(c) {
+  return fetch("./images/blocks/styles.json", { cache: "no-cache" })
+    .then((r) => r.json())
+    .then((list) => {
+      const urls = ["./images/blocks/styles.json"];
+      list.forEach((id) => BLOCK_COLORS.forEach((col) => urls.push("./images/blocks/" + id + "/" + col + ".webp")));
+      return Promise.all(urls.map((u) => c.add(u).catch(() => {})));
+    })
+    .catch(() => {});
+}
+
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      .then((c) => c.addAll(ASSETS).then(() => precacheBlocks(c)))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (e) => {

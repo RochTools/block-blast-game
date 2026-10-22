@@ -376,30 +376,6 @@
       background-repeat: no-repeat;
       border-radius: 0;
     }
-    html[data-bstyle="glossy"] .block[data-i="0"] { background-image: url("images/blocks/glossy/red.webp"); }
-    html[data-bstyle="glossy"] .block[data-i="1"] { background-image: url("images/blocks/glossy/orange.webp"); }
-    html[data-bstyle="glossy"] .block[data-i="2"] { background-image: url("images/blocks/glossy/yellow.webp"); }
-    html[data-bstyle="glossy"] .block[data-i="3"] { background-image: url("images/blocks/glossy/green.webp"); }
-    html[data-bstyle="glossy"] .block[data-i="4"] { background-image: url("images/blocks/glossy/cyan.webp"); }
-    html[data-bstyle="glossy"] .block[data-i="5"] { background-image: url("images/blocks/glossy/blue.webp"); }
-    html[data-bstyle="glossy"] .block[data-i="6"] { background-image: url("images/blocks/glossy/purple.webp"); }
-    html[data-bstyle="glossy"] .block[data-i="7"] { background-image: url("images/blocks/glossy/pink.webp"); }
-    html[data-bstyle="gem"] .block[data-i="0"] { background-image: url("images/blocks/gem/red.webp"); }
-    html[data-bstyle="gem"] .block[data-i="1"] { background-image: url("images/blocks/gem/orange.webp"); }
-    html[data-bstyle="gem"] .block[data-i="2"] { background-image: url("images/blocks/gem/yellow.webp"); }
-    html[data-bstyle="gem"] .block[data-i="3"] { background-image: url("images/blocks/gem/green.webp"); }
-    html[data-bstyle="gem"] .block[data-i="4"] { background-image: url("images/blocks/gem/cyan.webp"); }
-    html[data-bstyle="gem"] .block[data-i="5"] { background-image: url("images/blocks/gem/blue.webp"); }
-    html[data-bstyle="gem"] .block[data-i="6"] { background-image: url("images/blocks/gem/purple.webp"); }
-    html[data-bstyle="gem"] .block[data-i="7"] { background-image: url("images/blocks/gem/pink.webp"); }
-    html[data-bstyle="stone"] .block[data-i="0"] { background-image: url("images/blocks/stone/red.webp"); }
-    html[data-bstyle="stone"] .block[data-i="1"] { background-image: url("images/blocks/stone/orange.webp"); }
-    html[data-bstyle="stone"] .block[data-i="2"] { background-image: url("images/blocks/stone/yellow.webp"); }
-    html[data-bstyle="stone"] .block[data-i="3"] { background-image: url("images/blocks/stone/green.webp"); }
-    html[data-bstyle="stone"] .block[data-i="4"] { background-image: url("images/blocks/stone/cyan.webp"); }
-    html[data-bstyle="stone"] .block[data-i="5"] { background-image: url("images/blocks/stone/blue.webp"); }
-    html[data-bstyle="stone"] .block[data-i="6"] { background-image: url("images/blocks/stone/purple.webp"); }
-    html[data-bstyle="stone"] .block[data-i="7"] { background-image: url("images/blocks/stone/pink.webp"); }
 
     
     @keyframes dropIn {
@@ -1715,18 +1691,51 @@
       });
       
 
-      /* ===== STYLE BLOK (gambar) ===== */
+      /* ===== STYLE BLOK (gambar) =====
+         Daftar style ada di images/blocks/styles.json  (contoh: ["glossy","gem","stone","crystal"])
+         Tiap style = folder images/blocks/<nama>/ berisi 8 gambar: red orange yellow green cyan blue purple pink (.webp)
+         "classic" selalu ada di akhir (gaya lama, warna ikut tema). */
       var STORAGE_BSTYLE = "ikky_blockblast3d_bstyle";
-      var BSTYLES = [ { id: "glossy", name: "Glossy" }, { id: "gem", name: "Gem" }, { id: "stone", name: "Stone" }, { id: "classic", name: "Classic" } ];
+      var BCOLORS = ["red", "orange", "yellow", "green", "cyan", "blue", "purple", "pink"];
+      var BSTYLES = [];
       var bstyleIdx = 0;
-      try { var sb = lsGet(STORAGE_BSTYLE); for (var bi = 0; bi < BSTYLES.length; bi++) { if (BSTYLES[bi].id === sb) bstyleIdx = bi; } } catch (e) {}
-      function applyBlockStyle() {
-        document.documentElement.setAttribute("data-bstyle", BSTYLES[bstyleIdx].id);
-        var l = document.getElementById("blockStyleLabel");
-        if (l) l.textContent = "Blocks: " + BSTYLES[bstyleIdx].name;
-        try { lsSet(STORAGE_BSTYLE, BSTYLES[bstyleIdx].id); } catch (e) {}
+      
+      function setBlockStyles(list) {
+        var ids = list.filter(function(x) { return typeof x === "string" && /^[a-z0-9_-]+$/i.test(x) && x !== "classic"; });
+        ids.push("classic");
+        BSTYLES = ids.map(function(id) { return { id: id, name: id.charAt(0).toUpperCase() + id.slice(1) }; });
+        var css = "";
+        ids.forEach(function(id) {
+          if (id === "classic") return;
+          BCOLORS.forEach(function(c, i) {
+            css += 'html[data-bstyle="' + id + '"] .block[data-i="' + i + '"]{background-image:url("images/blocks/' + id + '/' + c + '.webp")}\n';
+          });
+        });
+        var st = document.getElementById("bstyleCss");
+        if (!st) { st = document.createElement("style"); st.id = "bstyleCss"; document.head.appendChild(st); }
+        st.textContent = css;
+        var saved = lsGet(STORAGE_BSTYLE);
+        bstyleIdx = 0;
+        for (var bi = 0; bi < BSTYLES.length; bi++) { if (BSTYLES[bi].id === saved) bstyleIdx = bi; }
+        applyBlockStyle();
       }
-      applyBlockStyle();
+      
+      function applyBlockStyle() {
+        var cur = BSTYLES[bstyleIdx];
+        document.documentElement.setAttribute("data-bstyle", cur.id);
+        var l = document.getElementById("blockStyleLabel");
+        if (l) l.textContent = "Blocks: " + cur.name;
+        try { lsSet(STORAGE_BSTYLE, cur.id); } catch (e) {}
+      }
+      
+      /* langsung pakai daftar bawaan, lalu timpa dengan styles.json kalau ada */
+      setBlockStyles(["glossy", "gem", "stone", "crystal"]);
+      try {
+        fetch("images/blocks/styles.json").then(function(r) { return r.ok ? r.json() : null; }).then(function(list) {
+          if (Array.isArray(list) && list.length) setBlockStyles(list);
+        }).catch(function() {});
+      } catch (e) {}
+      
       document.getElementById("blockStyleBtn").addEventListener("click", function() {
         bstyleIdx = (bstyleIdx + 1) % BSTYLES.length;
         applyBlockStyle();
