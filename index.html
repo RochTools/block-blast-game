@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Block Blast">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" as="image" href="images/block.webp">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <title>BLOCK BLAST 3D</title>
@@ -22,7 +23,7 @@
       --accent2: #00e5ff;
       --panel: rgba(20, 12, 46, 0.72);
       --panel-border: rgba(255, 255, 255, 0.08);
-      --grid-cell: rgba(255, 255, 255, 0.045);
+      --grid-cell: rgba(10, 0, 30, 0.45);
       --grid-cell-border: rgba(255, 255, 255, 0.09);
       --text: #f1ecff;
       --text-dim: #a99fd4;
@@ -34,10 +35,10 @@
       --modal1: #241249;
       --modal2: #150a30;
     }
-    html[data-theme="ocean"] { --bg1:#031a2e; --bg2:#06375a; --bg3:#0a5a7a; --accent:#00d4aa; --accent2:#4fc3ff; --accent3:#2a7fff; --panel:rgba(5,40,70,.8); --panel-border:rgba(160,230,255,.14); --grid-cell:rgba(160,230,255,.06); --grid-cell-border:rgba(160,230,255,.12); --text:#e6f7ff; --text-dim:#8fc4dc; --title:#d8f3ff; --gold:#ffe08a; --modal1:#08405f; --modal2:#031f33; }
-    html[data-theme="forest"] { --bg1:#07140c; --bg2:#0f2a18; --bg3:#1c4a26; --accent:#a8e063; --accent2:#56ab2f; --accent3:#2e8b57; --panel:rgba(10,36,20,.8); --panel-border:rgba(190,255,190,.12); --grid-cell:rgba(190,255,190,.05); --grid-cell-border:rgba(190,255,190,.1); --text:#eaffe8; --text-dim:#9cc79c; --title:#e0ffd8; --gold:#ffe58a; --modal1:#174a28; --modal2:#08180e; }
-    html[data-theme="sunset"] { --bg1:#1d0a18; --bg2:#4a1530; --bg3:#8a2f3a; --accent:#ff7a45; --accent2:#ffc15e; --accent3:#ff4d6d; --panel:rgba(60,15,35,.8); --panel-border:rgba(255,200,160,.14); --grid-cell:rgba(255,200,160,.06); --grid-cell-border:rgba(255,200,160,.12); --text:#fff0e6; --text-dim:#d9a89a; --title:#ffe6d6; --gold:#ffe08a; --modal1:#5a1a38; --modal2:#240a1a; }
-    html[data-theme="candy"] { --bg1:#2a0f3a; --bg2:#5a1f6e; --bg3:#8a2f8a; --accent:#ff7ac6; --accent2:#7af0ff; --accent3:#c77dff; --panel:rgba(70,20,90,.78); --panel-border:rgba(255,200,255,.18); --grid-cell:rgba(255,220,255,.07); --grid-cell-border:rgba(255,220,255,.14); --text:#fff0fb; --text-dim:#dba8e0; --title:#ffe0f6; --gold:#fff09a; --modal1:#6a2a82; --modal2:#2a1038; }
+    html[data-theme="ocean"] { --bg1:#020f24; --bg2:#04295c; --bg3:#0a54b0; --accent:#00e0b8; --accent2:#4fc3ff; --accent3:#2a7fff; --panel:rgba(2,18,46,.88); --panel-border:rgba(130,205,255,.24); --grid-cell:rgba(0,8,34,.5); --grid-cell-border:rgba(130,205,255,.16); --text:#eaf8ff; --text-dim:#a6d6f0; --title:#dff5ff; --gold:#ffe08a; --modal1:#08407a; --modal2:#021428; }
+    html[data-theme="forest"] { --bg1:#03110a; --bg2:#0a3a1c; --bg3:#13722f; --accent:#a8e063; --accent2:#56ab2f; --accent3:#2e8b57; --panel:rgba(2,22,11,.9); --panel-border:rgba(160,255,175,.22); --grid-cell:rgba(0,14,5,.5); --grid-cell-border:rgba(160,255,175,.15); --text:#effff0; --text-dim:#aedcb0; --title:#e6ffdc; --gold:#ffe58a; --modal1:#17592c; --modal2:#05160b; }
+    html[data-theme="sunset"] { --bg1:#16040f; --bg2:#5c0f2e; --bg3:#c4351f; --accent:#ff7a45; --accent2:#ffc15e; --accent3:#ff4d6d; --panel:rgba(40,6,22,.88); --panel-border:rgba(255,205,165,.24); --grid-cell:rgba(28,0,10,.48); --grid-cell-border:rgba(255,205,165,.16); --text:#fff3ea; --text-dim:#f0b8a6; --title:#ffe9d9; --gold:#ffe08a; --modal1:#7a1a36; --modal2:#1c0612; }
+    html[data-theme="candy"] { --bg1:#1a0838; --bg2:#5a17a0; --bg3:#c42aa8; --accent:#ff7ac6; --accent2:#7af0ff; --accent3:#c77dff; --panel:rgba(34,8,62,.88); --panel-border:rgba(255,205,255,.26); --grid-cell:rgba(26,0,50,.45); --grid-cell-border:rgba(255,205,255,.18); --text:#fff3fc; --text-dim:#e8b8ee; --title:#ffe6f8; --gold:#fff09a; --modal1:#7a22a0; --modal2:#220a3c; }
     html[data-theme="amoled"] { --bg1:#000; --bg2:#000; --bg3:#050505; --accent:#ff2f92; --accent2:#00e5ff; --accent3:#7c4dff; --panel:#0c0c0c; --panel-border:rgba(255,255,255,.1); --grid-cell:rgba(255,255,255,.04); --grid-cell-border:rgba(255,255,255,.09); --text:#f2f2f2; --text-dim:#8a8a8a; --title:#ffffff; --gold:#ffd76b; --modal1:#141414; --modal2:#070707; }
     
     * {
@@ -359,12 +360,47 @@
     .block {
       position: absolute;
       inset: 0;
-      border-radius: 6px;
-      background: var(--c2);
-      border-top: 3px solid var(--c1);
+      border-radius: 10%;
+      /* gambar images/block.webp = bayangan/kilau abu-abu, warna dari tema (--c2) lewat blend overlay */
+      background: url("images/block.webp") center / 100% 100% no-repeat, var(--c2);
+      background-blend-mode: overlay;
     }
     
     .block::before { display: none; }
+
+    /* ===== BLOCK STYLE (images/blocks/<style>/<color>.webp). "classic" = gaya lama (tint tema) ===== */
+    html:not([data-bstyle="classic"]) .block {
+      background-color: transparent;
+      background-blend-mode: normal;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      border-radius: 0;
+    }
+    html[data-bstyle="glossy"] .block[data-i="0"] { background-image: url("images/blocks/glossy/red.webp"); }
+    html[data-bstyle="glossy"] .block[data-i="1"] { background-image: url("images/blocks/glossy/orange.webp"); }
+    html[data-bstyle="glossy"] .block[data-i="2"] { background-image: url("images/blocks/glossy/yellow.webp"); }
+    html[data-bstyle="glossy"] .block[data-i="3"] { background-image: url("images/blocks/glossy/green.webp"); }
+    html[data-bstyle="glossy"] .block[data-i="4"] { background-image: url("images/blocks/glossy/cyan.webp"); }
+    html[data-bstyle="glossy"] .block[data-i="5"] { background-image: url("images/blocks/glossy/blue.webp"); }
+    html[data-bstyle="glossy"] .block[data-i="6"] { background-image: url("images/blocks/glossy/purple.webp"); }
+    html[data-bstyle="glossy"] .block[data-i="7"] { background-image: url("images/blocks/glossy/pink.webp"); }
+    html[data-bstyle="gem"] .block[data-i="0"] { background-image: url("images/blocks/gem/red.webp"); }
+    html[data-bstyle="gem"] .block[data-i="1"] { background-image: url("images/blocks/gem/orange.webp"); }
+    html[data-bstyle="gem"] .block[data-i="2"] { background-image: url("images/blocks/gem/yellow.webp"); }
+    html[data-bstyle="gem"] .block[data-i="3"] { background-image: url("images/blocks/gem/green.webp"); }
+    html[data-bstyle="gem"] .block[data-i="4"] { background-image: url("images/blocks/gem/cyan.webp"); }
+    html[data-bstyle="gem"] .block[data-i="5"] { background-image: url("images/blocks/gem/blue.webp"); }
+    html[data-bstyle="gem"] .block[data-i="6"] { background-image: url("images/blocks/gem/purple.webp"); }
+    html[data-bstyle="gem"] .block[data-i="7"] { background-image: url("images/blocks/gem/pink.webp"); }
+    html[data-bstyle="stone"] .block[data-i="0"] { background-image: url("images/blocks/stone/red.webp"); }
+    html[data-bstyle="stone"] .block[data-i="1"] { background-image: url("images/blocks/stone/orange.webp"); }
+    html[data-bstyle="stone"] .block[data-i="2"] { background-image: url("images/blocks/stone/yellow.webp"); }
+    html[data-bstyle="stone"] .block[data-i="3"] { background-image: url("images/blocks/stone/green.webp"); }
+    html[data-bstyle="stone"] .block[data-i="4"] { background-image: url("images/blocks/stone/cyan.webp"); }
+    html[data-bstyle="stone"] .block[data-i="5"] { background-image: url("images/blocks/stone/blue.webp"); }
+    html[data-bstyle="stone"] .block[data-i="6"] { background-image: url("images/blocks/stone/purple.webp"); }
+    html[data-bstyle="stone"] .block[data-i="7"] { background-image: url("images/blocks/stone/pink.webp"); }
+
     
     @keyframes dropIn {
       0% {
@@ -671,6 +707,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="4,9 8,9 12,5 12,19 8,15 4,15" fill="currentColor" stroke="none"></polygon><path id="soundWave" d="M16 8a5 5 0 0 1 0 8M18.5 5.5a9 9 0 0 1 0 13"></path></svg>
             <span id="soundLabel">Sound</span>
           </button>
+          <button class="menu-item" id="blockStyleBtn" aria-label="Block style">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"></rect><rect x="9" y="9" width="6" height="6" rx="1"></rect></svg>
+            <span id="blockStyleLabel">Blocks</span>
+          </button>
           <button class="menu-item" id="themeBtn" aria-label="Theme">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2 0-1.5-1-1.8-1-3 0-1.2 1-2 2.2-2H17a4 4 0 0 0 4-4c0-4-4-7-9-7z"></path><circle cx="7.5" cy="11" r="1" fill="currentColor"></circle><circle cx="10" cy="7" r="1" fill="currentColor"></circle><circle cx="15" cy="7.5" r="1" fill="currentColor"></circle></svg>
             <span>Change Theme</span>
@@ -779,7 +819,7 @@
             grid[r][c] = nc;
             var el = blockEls[r][c];
             if (el) { el.style.setProperty("--c1", nc.c1);
-              el.style.setProperty("--c2", nc.c2); }
+              el.style.setProperty("--c2", nc.c2); el.setAttribute("data-i", gi); }
           }
         }
         for (var i = 0; i < 3; i++) {
@@ -1236,6 +1276,7 @@
                 blk.className = "block";
                 blk.style.setProperty("--c1", piece.color.c1);
                 blk.style.setProperty("--c2", piece.color.c2);
+                blk.setAttribute("data-i", piece.color.idx || 0);
                 blk.style.position = "absolute";
                 blk.style.inset = "0";
                 pc.appendChild(blk);
@@ -1288,6 +1329,7 @@
           blk.className = "block placed";
           blk.style.setProperty("--c1", piece.color.c1);
           blk.style.setProperty("--c2", piece.color.c2);
+                blk.setAttribute("data-i", piece.color.idx || 0);
           cellEls[r][c].appendChild(blk);
           blockEls[r][c] = blk;
         });
@@ -1444,6 +1486,7 @@
                 blk.className = "block";
                 blk.style.setProperty("--c1", piece.color.c1);
                 blk.style.setProperty("--c2", piece.color.c2);
+                blk.setAttribute("data-i", piece.color.idx || 0);
                 blk.style.width = "100%";
                 blk.style.height = "100%";
                 cellDiv.appendChild(blk);
@@ -1669,6 +1712,25 @@
         lsSet(STORAGE_MUTE, muted ? "1" : "0");
         updateSoundIcon();
         if (!muted) { unlockAudio(); sfxClick(); }
+      });
+      
+
+      /* ===== STYLE BLOK (gambar) ===== */
+      var STORAGE_BSTYLE = "ikky_blockblast3d_bstyle";
+      var BSTYLES = [ { id: "glossy", name: "Glossy" }, { id: "gem", name: "Gem" }, { id: "stone", name: "Stone" }, { id: "classic", name: "Classic" } ];
+      var bstyleIdx = 0;
+      try { var sb = lsGet(STORAGE_BSTYLE); for (var bi = 0; bi < BSTYLES.length; bi++) { if (BSTYLES[bi].id === sb) bstyleIdx = bi; } } catch (e) {}
+      function applyBlockStyle() {
+        document.documentElement.setAttribute("data-bstyle", BSTYLES[bstyleIdx].id);
+        var l = document.getElementById("blockStyleLabel");
+        if (l) l.textContent = "Blocks: " + BSTYLES[bstyleIdx].name;
+        try { lsSet(STORAGE_BSTYLE, BSTYLES[bstyleIdx].id); } catch (e) {}
+      }
+      applyBlockStyle();
+      document.getElementById("blockStyleBtn").addEventListener("click", function() {
+        bstyleIdx = (bstyleIdx + 1) % BSTYLES.length;
+        applyBlockStyle();
+        showThemeName("BLOCKS: " + BSTYLES[bstyleIdx].name);
       });
       
       document.getElementById("themeBtn").addEventListener("click", function() {
