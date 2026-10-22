@@ -1511,6 +1511,8 @@
       function attachDrag(hitEl, slotEl, index, bounds, cellPx) {
         hitEl.addEventListener("pointerdown", function(ev) {
           if (isGameOver) return;
+          /* satu drag saja: jari kedua/ketiga diabaikan supaya balok tidak nyangkut */
+          if (dragState) { ev.preventDefault(); return; }
           var piece = tray[index];
           if (!piece || piece.used) return;
           ev.preventDefault();
@@ -1683,6 +1685,29 @@
         moveGhost(ev.clientX, ev.clientY);
         updateHoverHighlight(ev.clientX, ev.clientY);
       }
+      
+      /* batalkan drag yang menggantung (misal sentuhan hilang karena gesture sistem / pindah aplikasi) */
+      function abortDrag() {
+        if (!dragState) return;
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", onPointerUp);
+        window.removeEventListener("pointercancel", onPointerUp);
+        clearHighlight();
+        if (dragState.ghost) dragState.ghost.remove();
+        if (dragState.slotEl) dragState.slotEl.style.opacity = "1";
+        dragState = null;
+      }
+      
+      /* semua jari terangkat tapi drag masih ada -> pasti menggantung */
+      ["touchend", "touchcancel"].forEach(function(evName) {
+        document.addEventListener(evName, function(e) {
+          if (dragState && e.touches && e.touches.length === 0) {
+            setTimeout(function() { if (dragState) abortDrag(); }, 60);
+          }
+        }, { passive: true });
+      });
+      window.addEventListener("blur", abortDrag);
+      document.addEventListener("visibilitychange", function() { if (document.hidden) abortDrag(); });
       
       function onPointerUp(ev) {
         if (!dragState || ev.pointerId !== dragState.pointerId) return;
