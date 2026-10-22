@@ -416,9 +416,16 @@
       }
     }
     
+    /* LINE CLEAR: gelombang dari titik taruh balok, kilat putih lalu meledak kecil */
     .block.clearing {
-      animation: clearPop .15s linear forwards;
+      animation: clearBurst .36s cubic-bezier(.3, .6, .4, 1) var(--d, 0ms) both;
       z-index: 5;
+    }
+    
+    @keyframes clearBurst {
+      0%   { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
+      30%  { transform: scale(1.28) rotate(-4deg); opacity: 1; filter: brightness(2.3) saturate(.7); }
+      100% { transform: scale(.05) rotate(24deg) translateY(-8px); opacity: 0; filter: brightness(1.6); }
     }
     
     /* TRAY */
@@ -598,23 +605,53 @@
       z-index: 40;
       border-radius: 2px;
       pointer-events: none;
-      animation: particleFly .6s ease-out forwards;
+      opacity: 0;
+      animation: particleFly .7s cubic-bezier(.2, .7, .4, 1) var(--pd, 0ms) both;
     }
     
+    .particle.round { border-radius: 50%; }
+    
     @keyframes particleFly {
-      0% {
-        transform: translate(0, 0) scale(1) rotate(0deg);
-        opacity: 1;
-      }
-      
-      100% {
-        transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(var(--rot));
-        opacity: 0;
-      }
+      0%   { transform: translate(0, 0) scale(1.2) rotate(0deg); opacity: 1; }
+      55%  { transform: translate(calc(var(--dx) * .85), var(--dy)) scale(1) rotate(calc(var(--rot) * .6)); opacity: 1; }
+      100% { transform: translate(var(--dx), calc(var(--dy) + 70px)) scale(.2) rotate(var(--rot)); opacity: 0; }
+    }
+    
+    /* teks CLEAR / COMBO */
+    .clear-pop {
+      position: fixed;
+      z-index: 60;
+      left: 50%;
+      top: 36%;
+      font-weight: 900;
+      font-size: 30px;
+      letter-spacing: 1px;
+      color: #fff;
+      white-space: nowrap;
+      text-shadow: 0 0 20px rgba(255, 255, 255, .7), 0 4px 12px rgba(0, 0, 0, .45);
+      opacity: 0;
+      pointer-events: none;
+      animation: clearPopText .9s cubic-bezier(.2, .8, .3, 1) forwards;
+    }
+    .clear-pop.t2 { font-size: 36px; color: #ffe56b; text-shadow: 0 0 24px rgba(255, 200, 40, .85), 0 4px 12px rgba(0, 0, 0, .45); }
+    .clear-pop.t3 { font-size: 42px; color: #ff7ad9; text-shadow: 0 0 28px rgba(255, 60, 200, .9), 0 4px 12px rgba(0, 0, 0, .45); }
+    .clear-pop small { display: block; font-size: .6em; text-align: center; opacity: .95; }
+    
+    @keyframes clearPopText {
+      0%   { opacity: 0; transform: translate(-50%, -30%) scale(.3); }
+      18%  { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+      32%  { transform: translate(-50%, -50%) scale(1); }
+      75%  { opacity: 1; transform: translate(-50%, -60%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -95%) scale(.95); }
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      .particle { display: none; }
+      .shake { animation: none; }
     }
     
     .shake {
-      animation: shakeAnim .28s ease;
+      animation: shakeAnim .34s ease;
     }
     
     @keyframes shakeAnim {
@@ -624,13 +661,10 @@
         transform: translateX(0);
       }
       
-      25% {
-        transform: translateX(-4px) rotateZ(-0.3deg);
-      }
-      
-      75% {
-        transform: translateX(4px) rotateZ(0.3deg);
-      }
+      20% { transform: translate(-5px, 2px) rotateZ(-0.5deg); }
+      40% { transform: translate(5px, -2px) rotateZ(0.5deg); }
+      60% { transform: translate(-3px, 1px); }
+      80% { transform: translate(3px, -1px); }
     }
     
     footer {
@@ -1127,7 +1161,7 @@
         });
       }
       
-      function playSound(name) {
+      function playSound(name, rate) {
         if (muted) return false;
         ensureAudio();
         if (!audioCtx) return false;
@@ -1139,6 +1173,7 @@
           var g = audioCtx.createGain();
           g.gain.value = SOUND_VOL[name] || 1;
           src.buffer = buf;
+          if (rate) src.playbackRate.value = rate;
           src.connect(g); g.connect(audioCtx.destination);
           src.start(0);
           return true;
@@ -1148,8 +1183,9 @@
       function sfxPick() { if (!playSound("pick")) synthPick(); }
       function sfxPlace() { if (!playSound("place")) synthPlace(); }
       function sfxClear(n) {
-        if (!playSound("clear")) { synthClear(n); return; }
         /* makin tinggi nadanya saat kombo */
+        var rate = 1 + 0.05 * Math.min(Math.max(combo - 1, 0), 6);
+        if (!playSound("clear", rate)) { synthClear(n); return; }
       }
       function sfxBad() { if (!playSound("bad")) synthBad(); }
       function sfxOver() { if (!playSound("gameover")) synthOver(); }
@@ -1296,7 +1332,12 @@
         return false;
       }
       
+      var lastPlaced = { r: 3.5, c: 3.5 };
+      
       function placePiece(piece, row, col) {
+        var sr = 0, sc = 0;
+        piece.shape.forEach(function(o) { sr += row + o[0]; sc += col + o[1]; });
+        lastPlaced = { r: sr / piece.shape.length, c: sc / piece.shape.length };
         piece.shape.forEach(function(off) {
           var r = row + off[0],
             c = col + off[1];
@@ -1349,67 +1390,108 @@
         score += gained;
         updateScoreUI();
         sfxClear(totalLines);
+        buzz(totalLines);
         
-        
+        /* logika papan langsung dikosongkan; hanya tampilan yang beranimasi */
+        var dying = [];
+        var maxD = 0;
         keys.forEach(function(k) {
           var pos = cellsToClear[k];
-          var r = pos[0],
-            c = pos[1];
+          var r = pos[0], c = pos[1];
           var blk = blockEls[r][c];
+          var col = grid[r][c];
+          grid[r][c] = null;
+          blockEls[r][c] = null;
           if (blk) {
+            var d = Math.min(Math.round(Math.hypot(r - lastPlaced.r, c - lastPlaced.c) * 28), 230);
+            if (d > maxD) maxD = d;
+            blk.style.setProperty("--d", d + "ms");
             blk.classList.add("clearing");
-            
+            dying.push({ el: blk, r: r, c: c, d: d, col: col });
           }
         });
         
+        spawnClearParticles(dying, totalLines, combo);
         showCombo(totalLines, combo, gained);
+        if (totalLines >= 2 || combo >= 3) {
+          boardWrap.classList.remove("shake");
+          void boardWrap.offsetWidth;
+          boardWrap.classList.add("shake");
+          setTimeout(function() { boardWrap.classList.remove("shake"); }, 360);
+        }
         
         setTimeout(function() {
-          keys.forEach(function(k) {
-            var pos = cellsToClear[k];
-            var r = pos[0],
-              c = pos[1];
-            grid[r][c] = null;
-            if (blockEls[r][c]) {
-              blockEls[r][c].remove();
-              blockEls[r][c] = null;
-            }
-          });
-        }, 160);
+          dying.forEach(function(o) { if (o.el.parentNode) o.el.remove(); });
+        }, maxD + 400);
+      }
+      
+      function buzz(lines) {
+        try { if (navigator.vibrate) navigator.vibrate(lines >= 2 ? [25, 35, 45] : 18); } catch (e) {}
       }
       
       function showCombo(lines, comboCount, gained) {
         var pop = document.createElement("div");
-        pop.className = "combo-pop";
-        var label = lines >= 2 ? "MULTI CLEAR!" : "CLEAR!";
+        var tier = (comboCount >= 5 || lines >= 3) ? " t3" : ((comboCount >= 3 || lines >= 2) ? " t2" : "");
+        pop.className = "clear-pop" + tier;
+        var label = lines >= 3 ? "AMAZING!" : (lines >= 2 ? "MULTI CLEAR!" : "CLEAR!");
         if (comboCount >= 3) label = "COMBO x" + comboCount + "!";
-        pop.textContent = label + " +" + gained;
+        pop.innerHTML = label + "<small>+" + gained + "</small>";
         document.body.appendChild(pop);
-        setTimeout(function() { pop.remove(); }, 620);
+        setTimeout(function() { pop.remove(); }, 950);
       }
       
-      function spawnParticles(cellEl, color) {
-        var rect = cellEl.getBoundingClientRect();
-        var cx = rect.left + rect.width / 2;
-        var cy = rect.top + rect.height / 2;
-        var n = 2;
-        for (var i = 0; i < n; i++) {
+      var PARTICLE_HEX = ["#ff4d4d", "#ff9a2e", "#ffd93d", "#3ddc6a", "#3dd9ff", "#4d7cff", "#b05dff", "#ff4fb8"];
+      var REDUCE_MOTION = false;
+      try { REDUCE_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+      
+      /* partikel konfeti: warna ikut warna balok, jumlah dibatasi supaya HP murah tetap lancar */
+      function spawnClearParticles(dying, lines, comboCount) {
+        if (REDUCE_MOTION || !dying.length) return;
+        var useTheme = document.documentElement.getAttribute("data-bstyle") === "classic";
+        var perCell = lines >= 2 ? 3 : 2;
+        var cap = 44 + Math.min(comboCount, 5) * 6;
+        var made = 0;
+        var frag = document.createDocumentFragment();
+        var made_els = [];
+        function mk(cx, cy, hex, delay, power) {
           var p = document.createElement("div");
-          p.className = "particle";
-          var size = 4 + Math.random() * 5;
+          p.className = "particle" + (Math.random() > 0.5 ? " round" : "");
+          var size = 5 + Math.random() * 6;
           p.style.width = size + "px";
           p.style.height = size + "px";
           p.style.left = cx + "px";
           p.style.top = cy + "px";
-          p.style.background = Math.random() > 0.5 ? color.c1 : color.c2;
+          p.style.background = hex;
           var angle = Math.random() * Math.PI * 2;
-          var dist = 30 + Math.random() * 50;
+          var dist = (28 + Math.random() * 52) * power;
           p.style.setProperty("--dx", (Math.cos(angle) * dist) + "px");
-          p.style.setProperty("--dy", (Math.sin(angle) * dist - 20) + "px");
-          p.style.setProperty("--rot", (Math.random() * 360) + "deg");
-          document.body.appendChild(p);
-          (function(el) { setTimeout(function() { el.remove(); }, 650); })(p);
+          p.style.setProperty("--dy", (Math.sin(angle) * dist - 28) + "px");
+          p.style.setProperty("--rot", ((Math.random() - 0.5) * 540) + "deg");
+          p.style.setProperty("--pd", delay + "ms");
+          frag.appendChild(p);
+          made_els.push(p);
         }
+        /* baca semua posisi sel dulu (satu kali), baru tulis DOM */
+        var rects = dying.map(function(o) { return cellEls[o.r][o.c].getBoundingClientRect(); });
+        for (var i = 0; i < dying.length && made < cap; i++) {
+          var o = dying[i], rc = rects[i];
+          var cx = rc.left + rc.width / 2, cy = rc.top + rc.height / 2;
+          var hex1 = useTheme && o.col ? o.col.c1 : PARTICLE_HEX[(o.col && o.col.idx) || 0];
+          var hex2 = useTheme && o.col ? o.col.c2 : "#ffffff";
+          for (var k = 0; k < perCell && made < cap; k++, made++) {
+            mk(cx, cy, k % 2 ? hex2 : hex1, o.d + 40, 1);
+          }
+        }
+        /* kombo besar: semburan konfeti tambahan dari tengah papan */
+        if (comboCount >= 3 || lines >= 3) {
+          var br = boardEl.getBoundingClientRect();
+          var bx = br.left + br.width / 2, by = br.top + br.height / 2;
+          for (var m = 0; m < 14; m++) {
+            mk(bx, by, PARTICLE_HEX[m % 8], 60, 2.4);
+          }
+        }
+        document.body.appendChild(frag);
+        setTimeout(function() { made_els.forEach(function(el) { el.remove(); }); }, 1300);
       }
       
       function updateScoreUI() {
