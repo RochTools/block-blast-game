@@ -1,14 +1,18 @@
 [
- {
-  "id": "wood",
-  "name": "Wood"
- },
- {
-  "id": "rock",
-  "name": "Rock Wall"
- },
- {
-  "id": "ice",
-  "name": "Ice"
- }
+  {
+    "id": "wood",
+    "name": "Wood"
+  },
+  {
+    "id": "rock",
+    "name": "Rock Wall"
+  },
+  {
+    "id": "ice",
+    "name": "Ice"
+  },
+  {
+    "id": "emerald",
+    "name": "Emerald"
+  }
 ]
