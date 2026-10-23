@@ -35,11 +35,6 @@
       --modal1: #241249;
       --modal2: #150a30;
     }
-    html[data-theme="ocean"] { --bg1:#020f24; --bg2:#04295c; --bg3:#0a54b0; --accent:#00e0b8; --accent2:#4fc3ff; --accent3:#2a7fff; --panel:rgba(2,18,46,.88); --panel-border:rgba(130,205,255,.24); --grid-cell:rgba(0,8,34,.5); --grid-cell-border:rgba(130,205,255,.16); --text:#eaf8ff; --text-dim:#a6d6f0; --title:#dff5ff; --gold:#ffe08a; --modal1:#08407a; --modal2:#021428; }
-    html[data-theme="forest"] { --bg1:#03110a; --bg2:#0a3a1c; --bg3:#13722f; --accent:#a8e063; --accent2:#56ab2f; --accent3:#2e8b57; --panel:rgba(2,22,11,.9); --panel-border:rgba(160,255,175,.22); --grid-cell:rgba(0,14,5,.5); --grid-cell-border:rgba(160,255,175,.15); --text:#effff0; --text-dim:#aedcb0; --title:#e6ffdc; --gold:#ffe58a; --modal1:#17592c; --modal2:#05160b; }
-    html[data-theme="sunset"] { --bg1:#16040f; --bg2:#5c0f2e; --bg3:#c4351f; --accent:#ff7a45; --accent2:#ffc15e; --accent3:#ff4d6d; --panel:rgba(40,6,22,.88); --panel-border:rgba(255,205,165,.24); --grid-cell:rgba(28,0,10,.48); --grid-cell-border:rgba(255,205,165,.16); --text:#fff3ea; --text-dim:#f0b8a6; --title:#ffe9d9; --gold:#ffe08a; --modal1:#7a1a36; --modal2:#1c0612; }
-    html[data-theme="candy"] { --bg1:#1a0838; --bg2:#5a17a0; --bg3:#c42aa8; --accent:#ff7ac6; --accent2:#7af0ff; --accent3:#c77dff; --panel:rgba(34,8,62,.88); --panel-border:rgba(255,205,255,.26); --grid-cell:rgba(26,0,50,.45); --grid-cell-border:rgba(255,205,255,.18); --text:#fff3fc; --text-dim:#e8b8ee; --title:#ffe6f8; --gold:#fff09a; --modal1:#7a22a0; --modal2:#220a3c; }
-    html[data-theme="amoled"] { --bg1:#000; --bg2:#000; --bg3:#050505; --accent:#ff2f92; --accent2:#00e5ff; --accent3:#7c4dff; --panel:#0c0c0c; --panel-border:rgba(255,255,255,.1); --grid-cell:rgba(255,255,255,.04); --grid-cell-border:rgba(255,255,255,.09); --text:#f2f2f2; --text-dim:#8a8a8a; --title:#ffffff; --gold:#ffd76b; --modal1:#141414; --modal2:#070707; }
     /* ROCK WALL: dinding batu (themes/rock.svg), tanpa kotak di tray */
     html[data-theme="rock"] { --bg1:#14100d; --bg2:#1d1712; --bg3:#2a2119; --accent:#ffb347; --accent2:#ffd27a; --accent3:#e8864a; --panel:rgba(20,14,9,.9); --panel-border:rgba(255,225,180,.22); --grid-cell:rgba(10,6,3,.55); --grid-cell-border:rgba(255,225,180,.14); --text:#f6ecdd; --text-dim:#cdb99f; --title:#fff1d9; --gold:#ffd76b; --modal1:#3a2c20; --modal2:#17100b; }
     html[data-theme="rock"] body {
@@ -51,6 +46,29 @@
     }
     html[data-theme="rock"] #board { background: rgba(14, 9, 5, .84); }
     html[data-theme="rock"] .tray-slot { background: none; border-color: transparent; box-shadow: none; }
+    /* WOOD: papan kayu (themes/wood-bg.svg, themes/wood-panel.svg), bingkai kayu untuk papan, skor & tray */
+    html[data-theme="wood"] { --bg1:#4a2810; --bg2:#6b3d19; --bg3:#8a5426; --accent:#ffcf5a; --accent2:#ffe08a; --accent3:#e8943a; --panel:#4a2a12; --panel-border:rgba(255,200,120,.35); --grid-cell:rgba(32,14,4,.62); --grid-cell-border:rgba(255,190,110,.10); --text:#fff3da; --text-dim:#f0cf9e; --title:#fff0cf; --gold:#ffd24d; --modal1:#7a4a22; --modal2:#33190a; }
+    html[data-theme="wood"] body {
+      background:
+        radial-gradient(ellipse at 50% 40%, rgba(255,210,140,.12) 0%, rgba(0,0,0,0) 55%),
+        linear-gradient(rgba(50,20,0,.05), rgba(40,15,0,.35)),
+        url("themes/wood-bg.svg") center top / 360px 360px repeat,
+        var(--bg1);
+    }
+    html[data-theme="wood"] .stats-card,
+    html[data-theme="wood"] .icon-btn,
+    html[data-theme="wood"] .tray-slot {
+      background: url("themes/wood-panel.svg") center / 240px 120px repeat, var(--panel);
+      border: 3px solid #c98a45;
+      box-shadow: 0 3px 0 #5a300f, 0 6px 10px rgba(0,0,0,.4), inset 0 2px 0 rgba(255,225,170,.35), inset 0 -3px 8px rgba(0,0,0,.45);
+    }
+    html[data-theme="wood"] #board {
+      background: url("themes/wood-panel.svg") center / 240px 120px repeat, var(--panel);
+      border: 5px solid #c98a45;
+      border-radius: 22px;
+      box-shadow: 0 4px 0 #5a300f, 0 10px 18px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,225,170,.4), inset 0 0 14px rgba(0,0,0,.5);
+    }
+    html[data-theme="wood"] .cell { box-shadow: inset 0 3px 6px rgba(0,0,0,.55), inset 0 -1px 0 rgba(255,200,130,.12); }
     
     * {
       box-sizing: border-box;
@@ -817,21 +835,10 @@
       ];
 
       var STORAGE_THEME = "ikky_blockblast3d_theme";
+      /* Tema: hanya yang memakai gambar SVG (themes/*.svg). Tema pertama = bawaan.
+         Tema baru: tambah gaya CSS html[data-theme="id"] di atas + satu baris di sini. */
       var THEMES = [
-        { id: "neon", name: "Neon", blocks: COLORS },
-        { id: "ocean", name: "Ocean", blocks: [
-          { c1: "#a8e6ff", c2: "#1e90d6" }, { c1: "#9ff5e0", c2: "#0fb5a0" }, { c1: "#b8c8ff", c2: "#4a63d8" }, { c1: "#d0f4ff", c2: "#2ab7ca" },
-          { c1: "#c5b8ff", c2: "#6a5acd" }, { c1: "#a6ffd8", c2: "#20b97a" }, { c1: "#ffe6a8", c2: "#f4a62a" }, { c1: "#ffb8c8", c2: "#e8506e" } ] },
-        { id: "forest", name: "Forest", blocks: [
-          { c1: "#d4f59a", c2: "#7cb82f" }, { c1: "#9ff0b8", c2: "#2e9e5b" }, { c1: "#ffe9a0", c2: "#e0a82e" }, { c1: "#ffc9a0", c2: "#d9692e" },
-          { c1: "#e0c9a8", c2: "#a0703c" }, { c1: "#a8e6d8", c2: "#2a9d8f" }, { c1: "#f5b8b8", c2: "#c94c4c" }, { c1: "#c8d8ff", c2: "#5a7fd0" } ] },
-        { id: "sunset", name: "Sunset", blocks: [
-          { c1: "#ffd0a0", c2: "#ff7a45" }, { c1: "#fff0a0", c2: "#ffc15e" }, { c1: "#ffb0b8", c2: "#ff4d6d" }, { c1: "#e0b0ff", c2: "#a855f7" },
-          { c1: "#ffc0e0", c2: "#e8489a" }, { c1: "#ffe0a0", c2: "#f59e0b" }, { c1: "#ffa8a0", c2: "#dc3545" }, { c1: "#c8b0ff", c2: "#6d4aff" } ] },
-        { id: "candy", name: "Candy", blocks: [
-          { c1: "#ffd0ec", c2: "#ff7ac6" }, { c1: "#d0f8ff", c2: "#4cd7f0" }, { c1: "#ead0ff", c2: "#b66dff" }, { c1: "#fff4b0", c2: "#ffd23f" },
-          { c1: "#c8ffd8", c2: "#3ddc97" }, { c1: "#ffd8b8", c2: "#ff9f5a" }, { c1: "#d0d8ff", c2: "#6c8cff" }, { c1: "#ffc8c8", c2: "#ff6b6b" } ] },
-        { id: "amoled", name: "AMOLED", blocks: COLORS },
+        { id: "wood", name: "Wood", blocks: COLORS },
         { id: "rock", name: "Rock Wall", blocks: COLORS }
       ];
       var themeIdx = 0;
