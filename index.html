@@ -353,6 +353,25 @@
       transition: transform .06s ease-out;
     }
     
+    /* PREVIEW LINE: baris/kolom yang akan penuh menyala saat balok diseret ke sana */
+    .hint-layer > div.line-glow {
+      border-radius: 10px;
+      background: linear-gradient(90deg, rgba(255, 235, 140, .16), rgba(255, 255, 255, .34), rgba(255, 235, 140, .16));
+      border: 2px solid rgba(255, 232, 120, .95);
+      box-shadow: 0 0 14px rgba(255, 215, 90, .85), inset 0 0 10px rgba(255, 245, 190, .55);
+      transition: none;
+      animation: lineGlowPulse .42s ease-in-out infinite alternate;
+    }
+    
+    @keyframes lineGlowPulse {
+      from { opacity: .6; }
+      to { opacity: 1; }
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      .hint-layer > div.line-glow { animation: none; }
+    }
+    
     .hint-layer.bad > div {
       background: rgba(255, 60, 90, 0.22);
     }
@@ -1782,7 +1801,59 @@
         d.baseX = d.originLeft - br.left - boardWrap.clientLeft;
         d.baseY = d.originTop - br.top - boardWrap.clientTop;
         d.layer = layer;
+        d.bars = [];
         d.wasValid = null;
+      }
+      
+      /* baris/kolom mana yang akan penuh kalau bentuk ditaruh di (ar, ac)? */
+      function completedLines(shape, ar, ac) {
+        var inShape = {}, rowsT = {}, colsT = {};
+        for (var i = 0; i < shape.length; i++) {
+          var r = ar + shape[i][0], c = ac + shape[i][1];
+          inShape[r + "_" + c] = true; rowsT[r] = true; colsT[c] = true;
+        }
+        var rowsDone = [], colsDone = [];
+        Object.keys(rowsT).forEach(function(rk) {
+          var r = +rk, full = true;
+          for (var c = 0; c < SIZE; c++) { if (!grid[r][c] && !inShape[r + "_" + c]) { full = false; break; } }
+          if (full) rowsDone.push(r);
+        });
+        Object.keys(colsT).forEach(function(ck) {
+          var c = +ck, full = true;
+          for (var r = 0; r < SIZE; r++) { if (!grid[r][c] && !inShape[r + "_" + c]) { full = false; break; } }
+          if (full) colsDone.push(c);
+        });
+        return { rows: rowsDone, cols: colsDone };
+      }
+      
+      function showLineGlow(lines) {
+        var d = dragState;
+        var need = lines.rows.length + lines.cols.length;
+        var pad = 3;
+        var span = (SIZE - 1) * d.stepSize + d.cellSize;
+        while (d.bars.length < need) {
+          var bar = document.createElement("div");
+          bar.className = "line-glow";
+          bar.style.opacity = "0";
+          d.layer.appendChild(bar);
+          d.bars.push(bar);
+        }
+        var n = 0;
+        lines.rows.forEach(function(r) {
+          var b = d.bars[n++];
+          b.style.width = (span + pad * 2) + "px";
+          b.style.height = (d.cellSize + pad * 2) + "px";
+          b.style.transform = "translate3d(" + (d.baseX - pad) + "px," + (d.baseY + r * d.stepSize - pad) + "px,0)";
+          b.style.opacity = "";
+        });
+        lines.cols.forEach(function(c) {
+          var b = d.bars[n++];
+          b.style.width = (d.cellSize + pad * 2) + "px";
+          b.style.height = (span + pad * 2) + "px";
+          b.style.transform = "translate3d(" + (d.baseX + c * d.stepSize - pad) + "px," + (d.baseY - pad) + "px,0)";
+          b.style.opacity = "";
+        });
+        for (; n < d.bars.length; n++) { d.bars[n].style.opacity = "0"; }
       }
       
       function updateHoverHighlight(x, y) {
@@ -1804,6 +1875,15 @@
           d.layer.classList.toggle("bad", !valid);
           d.wasValid = valid;
         }
+        /* baris/kolom yang akan selesai -> menyala (hanya dihitung kalau posisi sah) */
+        if (valid) {
+          var lines = completedLines(shape, anchor.row, anchor.col);
+          var had = d.hadLines;
+          if (lines.rows.length + lines.cols.length > 0) {
+            showLineGlow(lines); d.hadLines = true;
+            if (!had) { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} }
+          } else if (had) { showLineGlow(lines); d.hadLines = false; }
+        } else if (d.hadLines) { showLineGlow({ rows: [], cols: [] }); d.hadLines = false; }
         for (var i = 0; i < shape.length; i++) {
           var r = anchor.row + shape[i][0];
           var c = anchor.col + shape[i][1];
