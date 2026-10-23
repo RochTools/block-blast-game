@@ -1,5 +1,5 @@
 /* Block Blast 3D – service worker (offline cache) */
-const CACHE = "block-blast-v22";
+const CACHE = "block-blast-v23";
 const ASSETS = [
   "./",
   "./index.html",
@@ -10,9 +10,6 @@ const ASSETS = [
   "./icons/apple-touch-icon.png",
   "./icons/favicon-32.png",
   "./images/block.webp",
-  "./themes/rock.webp",
-  "./themes/wood-bg.webp",
-  "./themes/ice-bg.webp",
   "./sounds/pick.mp3",
   "./sounds/place.mp3",
   "./sounds/clear.mp3",
@@ -34,10 +31,32 @@ function precacheBlocks(c) {
     .catch(() => {});
 }
 
+/* baca themes/themes.json -> simpan tiap <id>.css dan semua gambar yang dipakai di dalamnya (url(...)) */
+function precacheThemes(c) {
+  return fetch("./themes/themes.json", { cache: "no-cache" })
+    .then((r) => r.json())
+    .then((list) => {
+      const urls = ["./themes/themes.json"];
+      return Promise.all(list.map((t) => {
+        const cssUrl = "./themes/" + t.id + ".css";
+        urls.push(cssUrl);
+        return fetch(cssUrl, { cache: "no-cache" })
+          .then((r) => r.text())
+          .then((txt) => {
+            const re = /url\(\s*["']?([^"')]+)["']?\s*\)/g;
+            let m;
+            while ((m = re.exec(txt))) { if (!/^(data:|https?:|\/)/.test(m[1])) urls.push("./themes/" + m[1]); }
+          })
+          .catch(() => {});
+      })).then(() => Promise.all(Array.from(new Set(urls)).map((u) => c.add(u).catch(() => {}))));
+    })
+    .catch(() => {});
+}
+
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches.open(CACHE)
-      .then((c) => c.addAll(ASSETS).then(() => precacheBlocks(c)))
+      .then((c) => c.addAll(ASSETS).then(() => precacheBlocks(c)).then(() => precacheThemes(c)))
       .then(() => self.skipWaiting())
   );
 });

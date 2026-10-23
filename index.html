@@ -35,84 +35,10 @@
       --modal1: #241249;
       --modal2: #150a30;
     }
-    /* ROCK WALL: dinding batu terang (themes/rock.webp; sumber SVG themes/rock.svg), tanpa kotak di tray.
-       Warna cadangan (--bg1) juga terang, jadi kalau gambar telat/gagal dimuat tetap kelihatan jelas di siang hari. */
-    html[data-theme="rock"] { --bg1:#8f7f70; --bg2:#a39282; --bg3:#b5a393; --accent:#ffb347; --accent2:#ffd27a; --accent3:#e8864a; --panel:rgba(70,56,46,.92); --panel-border:rgba(255,235,200,.35); --grid-cell:rgba(40,30,22,.55); --grid-cell-border:rgba(255,235,200,.22); --text:#fff6e8; --text-dim:#f0dcc0; --title:#fff6e0; --gold:#ffd76b; --modal1:#6a5848; --modal2:#3a2e24; }
-    html[data-theme="rock"] body {
-      background:
-        linear-gradient(rgba(255,240,220,.04), rgba(30,20,10,.12)),
-        url("themes/rock.webp") center top / 320px 320px repeat,
-        var(--bg1);
-    }
-    html[data-theme="rock"] #board { background: rgba(60,46,36,.93); }
-    html[data-theme="rock"] .tray-slot { background: none; border-color: transparent; box-shadow: none; }
-    
-    /* ICE: es & salju terang (themes/ice-bg.webp; sumber SVG themes/ice-bg.svg), panel biru es berbingkai putih */
-    html[data-theme="ice"] { --bg1:#cfe9fb; --bg2:#bfe0f7; --bg3:#a9d3f0; --accent:#4fc3ff; --accent2:#9fe3ff; --accent3:#2a8fe0; --panel:#3a97d8; --panel-border:rgba(255,255,255,.7); --grid-cell:rgba(8,56,130,.34); --grid-cell-border:rgba(255,255,255,.38); --text:#ffffff; --text-dim:#d9f0ff; --title:#ffffff; --gold:#ffe58a; --modal1:#3a97d8; --modal2:#1f5f9e; }
-    html[data-theme="ice"] body {
-      background:
-        linear-gradient(rgba(255,255,255,.10), rgba(120,190,240,.12)),
-        url("themes/ice-bg.webp") center top / 360px 360px repeat,
-        var(--bg1);
-    }
-    html[data-theme="ice"] .stats-card,
-    html[data-theme="ice"] .icon-btn,
-    html[data-theme="ice"] #board,
-    html[data-theme="ice"] .tray-slot {
-      background: linear-gradient(#52b0ec, #2f86cc);
-      border: 4px solid #d6f1ff;
-      box-shadow: 0 0 0 2px #6bb8ea, 0 5px 0 2px #2a6fa8, inset 0 2px 0 rgba(255,255,255,.65), inset 0 -3px 0 rgba(0,40,100,.25);
-    }
-    html[data-theme="ice"] #board { border-radius: 22px; }
-    html[data-theme="ice"] .cell { box-shadow: inset 0 2px 0 rgba(0,40,110,.35), inset 0 -1px 0 rgba(255,255,255,.2); }
-    html[data-theme="ice"] .tray-slot::after {
-      content: "\2744\FE0E";
-      position: absolute; right: 8px; top: 5px;
-      font-size: 14px; line-height: 1; color: #e4f6ff; opacity: .9; pointer-events: none;
-    }
-    html[data-theme="ice"] footer, html[data-theme="ice"] footer a, html[data-theme="ice"] footer b { color: #1c5a96; opacity: 1; }
-    
-    /* WOOD: papan kayu terang (themes/wood-bg.webp, themes/wood-panel.webp; sumber SVG ada di themes/*.svg).
-       Bingkai kayu untuk papan, skor & tray. Warna cadangan terang supaya tetap jelas walau gambar belum termuat. */
-    html[data-theme="wood"] { --bg1:#c68b52; --bg2:#d49a60; --bg3:#e0a96c; --accent:#ffcf5a; --accent2:#ffe08a; --accent3:#e8943a; --panel:#8a5a2c; --panel-border:rgba(255,215,150,.45); --grid-cell:rgba(50,24,6,.55); --grid-cell-border:rgba(255,205,140,.16); --text:#fff6e0; --text-dim:#f6dcae; --title:#fff3d4; --gold:#ffd24d; --modal1:#8a5a2c; --modal2:#4a2a10; }
-    html[data-theme="wood"] body {
-      background:
-        linear-gradient(rgba(255,235,200,.05), rgba(60,25,0,.10)),
-        url("themes/wood-bg.webp") center top / 360px 360px repeat,
-        var(--bg1);
-    }
-    html[data-theme="wood"] .stats-card,
-    html[data-theme="wood"] .icon-btn {
-      background: linear-gradient(#a06832, #86531f);
-      border: 3px solid #e0a65a;
-      box-shadow: 0 3px 0 #6a3a14, inset 0 2px 0 rgba(255,225,170,.45), inset 0 -3px 0 rgba(0,0,0,.28);
-    }
-    html[data-theme="wood"] #board {
-      background: linear-gradient(#a06832, #86531f);
-      border: 5px solid #e0a65a;
-      border-radius: 22px;
-      box-shadow: 0 4px 0 #6a3a14, 0 8px 0 rgba(0,0,0,.2), inset 0 2px 0 rgba(255,225,170,.5), inset 0 0 0 2px rgba(0,0,0,.25);
-    }
-    html[data-theme="wood"] .cell { box-shadow: inset 0 3px 0 rgba(0,0,0,.45), inset 0 -1px 0 rgba(255,210,150,.18); }
-    
-    /* WOOD: kotak tempat balok (tray) dihias & dibuat jelas: dalam terang (krem-kayu), bingkai emas tebal + cincin gelap di luar,
-       paku di empat sudut, cahaya lembut di tengah. Balok warna-warni jadi kontras. */
-    html[data-theme="wood"] .tray-slot {
-      background-image:
-        radial-gradient(circle at center, #fff4cf 0 1.4px, #b9772f 2px 3.6px, rgba(60,25,0,.5) 4.2px, transparent 5px),
-        radial-gradient(circle at center, #fff4cf 0 1.4px, #b9772f 2px 3.6px, rgba(60,25,0,.5) 4.2px, transparent 5px),
-        radial-gradient(circle at center, #fff4cf 0 1.4px, #b9772f 2px 3.6px, rgba(60,25,0,.5) 4.2px, transparent 5px),
-        radial-gradient(circle at center, #fff4cf 0 1.4px, #b9772f 2px 3.6px, rgba(60,25,0,.5) 4.2px, transparent 5px),
-        radial-gradient(ellipse at 50% 40%, rgba(255,243,205,.55), rgba(255,243,205,0) 75%),
-        linear-gradient(#e9bf82, #cf9a58);
-      background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px, 100% 100%, 100% 100%;
-      background-position: 4px 4px, calc(100% - 4px) 4px, 4px calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), center, center;
-      background-repeat: no-repeat;
-      background-color: #d9a766;
-      border: 4px solid #f6cf8a;
-      border-radius: 18px;
-      box-shadow: 0 0 0 3px #7a4418, 0 6px 0 3px #5a3010, inset 0 0 0 2px #b27530, inset 0 3px 0 rgba(255,245,215,.7), inset 0 -4px 0 rgba(120,70,20,.3);
-    }
+    /* Gaya tiap tema ada di themes/<id>.css (daftar tema: themes/themes.json).
+       Layar disembunyikan sebentar sampai CSS tema siap, supaya tidak berkedip warna bawaan. */
+    html:not([data-ready]) body { visibility: hidden; animation: themeReadyFallback 0s 1.5s forwards; }
+    @keyframes themeReadyFallback { to { visibility: visible; } }
     
     * {
       box-sizing: border-box;
@@ -879,25 +805,60 @@
       ];
 
       var STORAGE_THEME = "ikky_blockblast3d_theme";
-      /* Tema: hanya yang memakai gambar SVG (themes/*.svg). Tema pertama = bawaan.
-         Tema baru: tambah gaya CSS html[data-theme="id"] di atas + satu baris di sini. */
-      var THEMES = [
-        { id: "wood", name: "Wood", blocks: COLORS },
-        { id: "rock", name: "Rock Wall", blocks: COLORS },
-        { id: "ice", name: "Ice", blocks: COLORS }
-      ];
+      /* ===== TEMA =====
+         Daftar tema: themes/themes.json  ->  [{"id":"wood","name":"Wood"}, ...]   (yang pertama = bawaan)
+         Gaya tiap tema: themes/<id>.css  (lihat themes/_template.css)
+         Tema baru = 1 file .css + 1 baris di themes.json. Tidak perlu mengubah index.html. */
+      var DEFAULT_THEMES = [ { id: "wood", name: "Wood" }, { id: "rock", name: "Rock Wall" }, { id: "ice", name: "Ice" } ];
+      var THEMES = [];
       var themeIdx = 0;
-      try {
-        var savedTheme = lsGet(STORAGE_THEME);
-        for (var ti = 0; ti < THEMES.length; ti++) { if (THEMES[ti].id === savedTheme) themeIdx = ti; }
-      } catch (e) {}
+      
+      function markReady() { document.documentElement.setAttribute("data-ready", "1"); }
+      
+      function ensureThemeCss(id) {
+        var lid = "themecss-" + id;
+        var l = document.getElementById(lid);
+        if (l) return l;
+        l = document.createElement("link");
+        l.rel = "stylesheet";
+        l.id = lid;
+        l.href = "themes/" + id + ".css";
+        document.head.appendChild(l);
+        return l;
+      }
+      
+      function setThemes(list) {
+        var ok = list.filter(function(t) { return t && typeof t.id === "string" && /^[a-z0-9_-]+$/i.test(t.id); });
+        if (!ok.length) ok = DEFAULT_THEMES;
+        THEMES = ok.map(function(t) { return { id: t.id, name: t.name || t.id, blocks: COLORS }; });
+        THEMES.forEach(function(t) { ensureThemeCss(t.id); });
+        var saved = lsGet(STORAGE_THEME);
+        themeIdx = 0;
+        for (var ti = 0; ti < THEMES.length; ti++) { if (THEMES[ti].id === saved) themeIdx = ti; }
+        applyTheme();
+      }
       
       function applyTheme() {
         var th = THEMES[themeIdx];
         document.documentElement.setAttribute("data-theme", th.id);
         COLORS = th.blocks;
         try { lsSet(STORAGE_THEME, th.id); } catch (e) {}
+        var l = ensureThemeCss(th.id);
+        if (l.sheet) { markReady(); }
+        else {
+          l.addEventListener("load", markReady);
+          l.addEventListener("error", markReady);
+          setTimeout(markReady, 1200);
+        }
       }
+      
+      /* langsung pakai tema bawaan (cepat), lalu timpa dengan themes/themes.json kalau ada */
+      setThemes(DEFAULT_THEMES);
+      try {
+        fetch("themes/themes.json").then(function(r) { return r.ok ? r.json() : null; }).then(function(list) {
+          if (Array.isArray(list) && list.length) setThemes(list);
+        }).catch(function() {});
+      } catch (e) {}
       
       /* ganti warna balok yang sudah ada di papan & tray ke palet tema baru */
       function recolorAll() {
