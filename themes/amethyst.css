@@ -1,0 +1,95 @@
+/* ========================================
+   AMETHYST CRYSTAL THEME
+   ======================================== */
+
+html[data-theme="amethyst"] {
+  --bg1: #10051f;
+  --bg2: #240943;
+  --bg3: #42106b;
+
+  --accent: #d946ff;
+  --accent2: #f0a6ff;
+  --accent3: #8b35e8;
+
+  --panel: rgba(35, 8, 65, 0.96);
+  --panel-border: rgba(226, 145, 255, 0.78);
+
+  --grid-cell: rgba(16, 4, 31, 0.78);
+  --grid-cell-border: rgba(210, 112, 255, 0.58);
+
+  --text: #fff2ff;
+  --text-dim: #dfc2f4;
+  --title: #ffffff;
+  --gold: #ffe58a;
+
+  --modal1: #42106b;
+  --modal2: #16052d;
+}
+
+/* Mobile Fantasy Background */
+html[data-theme="amethyst"] body {
+  background:
+    linear-gradient(
+      rgba(16, 3, 35, 0.08),
+      rgba(16, 3, 35, 0.18)
+    ),
+    url("amethyst.webp") center top / cover no-repeat,
+    var(--bg1);
+  background-attachment: scroll;
+}
+
+/* Score Cards and Icon Buttons */
+html[data-theme="amethyst"] .stats-card,
+html[data-theme="amethyst"] .icon-btn {
+  background: linear-gradient(145deg, #6522a0, #301052);
+  border: 3px solid #e7a0ff;
+  box-shadow:
+    0 0 0 2px rgba(180, 76, 255, 0.48),
+    0 5px 0 2px #21083b,
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -3px 0 rgba(20, 0, 35, 0.3);
+}
+
+/* Game Board */
+html[data-theme="amethyst"] #board {
+  background: linear-gradient(
+    145deg,
+    rgba(32, 7, 57, 0.96),
+    rgba(13, 3, 27, 0.97)
+  );
+  border: 3px solid #e05cff;
+  border-radius: 24px;
+  box-shadow:
+    0 0 10px rgba(217, 70, 255, 0.72),
+    0 0 26px rgba(139, 53, 232, 0.38),
+    inset 0 0 14px rgba(180, 76, 255, 0.12);
+}
+
+/* Grid Cells */
+html[data-theme="amethyst"] .cell {
+  box-shadow:
+    inset 0 2px 0 rgba(0, 0, 0, 0.28),
+    inset 0 -1px 0 rgba(230, 170, 255, 0.12);
+}
+
+/* Block Tray Slots */
+html[data-theme="amethyst"] .tray-slot {
+  background: rgba(22, 5, 42, 0.2);
+  border-color: rgba(210, 112, 255, 0.28);
+  box-shadow: none;
+}
+
+/* Footer */
+html[data-theme="amethyst"] footer,
+html[data-theme="amethyst"] footer a,
+html[data-theme="amethyst"] footer b {
+  color: #f0cfff;
+  opacity: 1;
+}
+
+/* Modal Windows */
+html[data-theme="amethyst"] .modal,
+html[data-theme="amethyst"] .modal-content {
+  background: linear-gradient(145deg, var(--modal1), var(--modal2));
+  border-color: var(--panel-border);
+}
