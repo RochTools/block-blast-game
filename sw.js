@@ -15,7 +15,7 @@ const ASSETS = [
   "./sounds/clear.mp3",
   "./sounds/bad.mp3",
   "./sounds/gameover.mp3",
-  "./sounds/click.mp3"
+  "./sounds/Click.mp3"
 ];
 
 /* baca images/blocks/styles.json lalu simpan semua gambar blok untuk offline */
