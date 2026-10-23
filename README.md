@@ -1,4 +1,4 @@
-# Block Blast 3D
+# 3D Blocks
 
 A fast, offline-ready Progressive Web App (PWA) puzzle game with 3D visuals and multiple theme sounds. Install it on your phone or computer and play anywhere, even without internet.
 
