@@ -47,6 +47,31 @@
     html[data-theme="rock"] #board { background: rgba(60,46,36,.93); }
     html[data-theme="rock"] .tray-slot { background: none; border-color: transparent; box-shadow: none; }
     
+    /* ICE: es & salju terang (themes/ice-bg.webp; sumber SVG themes/ice-bg.svg), panel biru es berbingkai putih */
+    html[data-theme="ice"] { --bg1:#cfe9fb; --bg2:#bfe0f7; --bg3:#a9d3f0; --accent:#4fc3ff; --accent2:#9fe3ff; --accent3:#2a8fe0; --panel:#3a97d8; --panel-border:rgba(255,255,255,.7); --grid-cell:rgba(8,56,130,.34); --grid-cell-border:rgba(255,255,255,.38); --text:#ffffff; --text-dim:#d9f0ff; --title:#ffffff; --gold:#ffe58a; --modal1:#3a97d8; --modal2:#1f5f9e; }
+    html[data-theme="ice"] body {
+      background:
+        linear-gradient(rgba(255,255,255,.10), rgba(120,190,240,.12)),
+        url("themes/ice-bg.webp") center top / 360px 360px repeat,
+        var(--bg1);
+    }
+    html[data-theme="ice"] .stats-card,
+    html[data-theme="ice"] .icon-btn,
+    html[data-theme="ice"] #board,
+    html[data-theme="ice"] .tray-slot {
+      background: linear-gradient(#52b0ec, #2f86cc);
+      border: 4px solid #d6f1ff;
+      box-shadow: 0 0 0 2px #6bb8ea, 0 5px 0 2px #2a6fa8, inset 0 2px 0 rgba(255,255,255,.65), inset 0 -3px 0 rgba(0,40,100,.25);
+    }
+    html[data-theme="ice"] #board { border-radius: 22px; }
+    html[data-theme="ice"] .cell { box-shadow: inset 0 2px 0 rgba(0,40,110,.35), inset 0 -1px 0 rgba(255,255,255,.2); }
+    html[data-theme="ice"] .tray-slot::after {
+      content: "\2744\FE0E";
+      position: absolute; right: 8px; top: 5px;
+      font-size: 14px; line-height: 1; color: #e4f6ff; opacity: .9; pointer-events: none;
+    }
+    html[data-theme="ice"] footer, html[data-theme="ice"] footer a, html[data-theme="ice"] footer b { color: #1c5a96; opacity: 1; }
+    
     /* WOOD: papan kayu terang (themes/wood-bg.webp, themes/wood-panel.webp; sumber SVG ada di themes/*.svg).
        Bingkai kayu untuk papan, skor & tray. Warna cadangan terang supaya tetap jelas walau gambar belum termuat. */
     html[data-theme="wood"] { --bg1:#c68b52; --bg2:#d49a60; --bg3:#e0a96c; --accent:#ffcf5a; --accent2:#ffe08a; --accent3:#e8943a; --panel:#8a5a2c; --panel-border:rgba(255,215,150,.45); --grid-cell:rgba(50,24,6,.55); --grid-cell-border:rgba(255,205,140,.16); --text:#fff6e0; --text-dim:#f6dcae; --title:#fff3d4; --gold:#ffd24d; --modal1:#8a5a2c; --modal2:#4a2a10; }
@@ -858,7 +883,8 @@
          Tema baru: tambah gaya CSS html[data-theme="id"] di atas + satu baris di sini. */
       var THEMES = [
         { id: "wood", name: "Wood", blocks: COLORS },
-        { id: "rock", name: "Rock Wall", blocks: COLORS }
+        { id: "rock", name: "Rock Wall", blocks: COLORS },
+        { id: "ice", name: "Ice", blocks: COLORS }
       ];
       var themeIdx = 0;
       try {
@@ -2080,7 +2106,7 @@
       }
       
       /* langsung pakai daftar bawaan, lalu timpa dengan styles.json kalau ada */
-      setBlockStyles(["glossy", "gem", "stone", "crystal"]);
+      setBlockStyles(["glossy", "gem", "stone", "crystal", "ice"]);
       try {
         fetch("images/blocks/styles.json").then(function(r) { return r.ok ? r.json() : null; }).then(function(list) {
           if (Array.isArray(list) && list.length) setBlockStyles(list);

@@ -1,5 +1,5 @@
 /* Block Blast 3D – service worker (offline cache) */
-const CACHE = "block-blast-v21";
+const CACHE = "block-blast-v22";
 const ASSETS = [
   "./",
   "./index.html",
@@ -12,6 +12,7 @@ const ASSETS = [
   "./images/block.webp",
   "./themes/rock.webp",
   "./themes/wood-bg.webp",
+  "./themes/ice-bg.webp",
   "./sounds/pick.mp3",
   "./sounds/place.mp3",
   "./sounds/clear.mp3",
