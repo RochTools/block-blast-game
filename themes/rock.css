@@ -1,12 +1,49 @@
-    /* ROCK WALL: dinding batu terang (themes/rock.webp; sumber SVG themes/rock.svg), tanpa kotak di tray.
-       Warna cadangan (--bg1) juga terang, jadi kalau gambar telat/gagal dimuat tetap kelihatan jelas di siang hari. */
-    html[data-theme="rock"] { --bg1:#8f7f70; --bg2:#a39282; --bg3:#b5a393; --accent:#ffb347; --accent2:#ffd27a; --accent3:#e8864a; --panel:rgba(70,56,46,.92); --panel-border:rgba(255,235,200,.35); --grid-cell:rgba(40,30,22,.55); --grid-cell-border:rgba(255,235,200,.22); --text:#fff6e8; --text-dim:#f0dcc0; --title:#fff6e0; --gold:#ffd76b; --modal1:#6a5848; --modal2:#3a2e24; }
-    html[data-theme="rock"] body {
-      background:
-        linear-gradient(rgba(255,240,220,.04), rgba(30,20,10,.12)),
-        url("rock.webp") center top / 320px 320px repeat,
-        var(--bg1);
-    }
-    html[data-theme="rock"] #board { background: rgba(60,46,36,.93); }
-    html[data-theme="rock"] .tray-slot { background: none; border-color: transparent; box-shadow: none; }
-    
+html[data-theme="rock"] {
+  --bg1: #020b2b;
+  --bg2: #061b50;
+  --bg3: #0a2d75;
+
+  --accent: #00c8ff;
+  --accent2: #4de8ff;
+  --accent3: #176bff;
+
+  --panel: rgba(2, 18, 55, 0.94);
+  --panel-border: rgba(0, 200, 255, 0.8);
+
+  --grid-cell: rgba(0, 30, 80, 0.55);
+  --grid-cell-border: rgba(0, 174, 255, 0.65);
+
+  --text: #eafaff;
+  --text-dim: #a9dfff;
+  --title: #ffffff;
+  --gold: #ffd84d;
+
+  --modal1: #09275b;
+  --modal2: #020b24;
+}
+
+html[data-theme="rock"] body {
+  background:
+    linear-gradient(rgba(0, 15, 60, 0.12), rgba(0, 10, 40, 0.2)),
+    url("rock.webp") center center / cover no-repeat,
+    var(--bg1);
+  background-attachment: fixed;
+}
+
+html[data-theme="rock"] #board {
+  background: linear-gradient(
+    145deg,
+    rgba(3, 25, 75, 0.96),
+    rgba(0, 12, 42, 0.97)
+  );
+  border: 2px solid #168dff;
+  box-shadow:
+    0 0 10px rgba(0, 160, 255, 0.8),
+    0 0 28px rgba(0, 100, 255, 0.45);
+}
+
+html[data-theme="rock"] .tray-slot {
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+}
