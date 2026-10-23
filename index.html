@@ -40,6 +40,17 @@
     html[data-theme="sunset"] { --bg1:#16040f; --bg2:#5c0f2e; --bg3:#c4351f; --accent:#ff7a45; --accent2:#ffc15e; --accent3:#ff4d6d; --panel:rgba(40,6,22,.88); --panel-border:rgba(255,205,165,.24); --grid-cell:rgba(28,0,10,.48); --grid-cell-border:rgba(255,205,165,.16); --text:#fff3ea; --text-dim:#f0b8a6; --title:#ffe9d9; --gold:#ffe08a; --modal1:#7a1a36; --modal2:#1c0612; }
     html[data-theme="candy"] { --bg1:#1a0838; --bg2:#5a17a0; --bg3:#c42aa8; --accent:#ff7ac6; --accent2:#7af0ff; --accent3:#c77dff; --panel:rgba(34,8,62,.88); --panel-border:rgba(255,205,255,.26); --grid-cell:rgba(26,0,50,.45); --grid-cell-border:rgba(255,205,255,.18); --text:#fff3fc; --text-dim:#e8b8ee; --title:#ffe6f8; --gold:#fff09a; --modal1:#7a22a0; --modal2:#220a3c; }
     html[data-theme="amoled"] { --bg1:#000; --bg2:#000; --bg3:#050505; --accent:#ff2f92; --accent2:#00e5ff; --accent3:#7c4dff; --panel:#0c0c0c; --panel-border:rgba(255,255,255,.1); --grid-cell:rgba(255,255,255,.04); --grid-cell-border:rgba(255,255,255,.09); --text:#f2f2f2; --text-dim:#8a8a8a; --title:#ffffff; --gold:#ffd76b; --modal1:#141414; --modal2:#070707; }
+    /* ROCK WALL: dinding batu (themes/rock.svg), tanpa kotak di tray */
+    html[data-theme="rock"] { --bg1:#14100d; --bg2:#1d1712; --bg3:#2a2119; --accent:#ffb347; --accent2:#ffd27a; --accent3:#e8864a; --panel:rgba(20,14,9,.9); --panel-border:rgba(255,225,180,.22); --grid-cell:rgba(10,6,3,.55); --grid-cell-border:rgba(255,225,180,.14); --text:#f6ecdd; --text-dim:#cdb99f; --title:#fff1d9; --gold:#ffd76b; --modal1:#3a2c20; --modal2:#17100b; }
+    html[data-theme="rock"] body {
+      background:
+        radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 35%, rgba(0,0,0,.55) 100%),
+        linear-gradient(rgba(10,6,3,.35), rgba(10,6,3,.5)),
+        url("themes/rock.svg") center top / 320px 320px repeat,
+        var(--bg1);
+    }
+    html[data-theme="rock"] #board { background: rgba(14, 9, 5, .84); }
+    html[data-theme="rock"] .tray-slot { background: none; border-color: transparent; box-shadow: none; }
     
     * {
       box-sizing: border-box;
@@ -801,7 +812,8 @@
         { id: "candy", name: "Candy", blocks: [
           { c1: "#ffd0ec", c2: "#ff7ac6" }, { c1: "#d0f8ff", c2: "#4cd7f0" }, { c1: "#ead0ff", c2: "#b66dff" }, { c1: "#fff4b0", c2: "#ffd23f" },
           { c1: "#c8ffd8", c2: "#3ddc97" }, { c1: "#ffd8b8", c2: "#ff9f5a" }, { c1: "#d0d8ff", c2: "#6c8cff" }, { c1: "#ffc8c8", c2: "#ff6b6b" } ] },
-        { id: "amoled", name: "AMOLED", blocks: COLORS }
+        { id: "amoled", name: "AMOLED", blocks: COLORS },
+        { id: "rock", name: "Rock Wall", blocks: COLORS }
       ];
       var themeIdx = 0;
       try {
