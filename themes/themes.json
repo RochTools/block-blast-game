@@ -1,0 +1,14 @@
+[
+ {
+  "id": "wood",
+  "name": "Wood"
+ },
+ {
+  "id": "rock",
+  "name": "Rock Wall"
+ },
+ {
+  "id": "ice",
+  "name": "Ice"
+ }
+]
