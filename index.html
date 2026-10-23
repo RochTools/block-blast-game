@@ -35,40 +35,59 @@
       --modal1: #241249;
       --modal2: #150a30;
     }
-    /* ROCK WALL: dinding batu (themes/rock.webp; sumber SVG themes/rock.svg), tanpa kotak di tray */
-    html[data-theme="rock"] { --bg1:#14100d; --bg2:#1d1712; --bg3:#2a2119; --accent:#ffb347; --accent2:#ffd27a; --accent3:#e8864a; --panel:rgba(20,14,9,.9); --panel-border:rgba(255,225,180,.22); --grid-cell:rgba(10,6,3,.55); --grid-cell-border:rgba(255,225,180,.14); --text:#f6ecdd; --text-dim:#cdb99f; --title:#fff1d9; --gold:#ffd76b; --modal1:#3a2c20; --modal2:#17100b; }
+    /* ROCK WALL: dinding batu terang (themes/rock.webp; sumber SVG themes/rock.svg), tanpa kotak di tray.
+       Warna cadangan (--bg1) juga terang, jadi kalau gambar telat/gagal dimuat tetap kelihatan jelas di siang hari. */
+    html[data-theme="rock"] { --bg1:#8f7f70; --bg2:#a39282; --bg3:#b5a393; --accent:#ffb347; --accent2:#ffd27a; --accent3:#e8864a; --panel:rgba(70,56,46,.92); --panel-border:rgba(255,235,200,.35); --grid-cell:rgba(40,30,22,.55); --grid-cell-border:rgba(255,235,200,.22); --text:#fff6e8; --text-dim:#f0dcc0; --title:#fff6e0; --gold:#ffd76b; --modal1:#6a5848; --modal2:#3a2e24; }
     html[data-theme="rock"] body {
       background:
-        radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 35%, rgba(0,0,0,.55) 100%),
-        linear-gradient(rgba(10,6,3,.35), rgba(10,6,3,.5)),
+        linear-gradient(rgba(255,240,220,.04), rgba(30,20,10,.12)),
         url("themes/rock.webp") center top / 320px 320px repeat,
         var(--bg1);
     }
-    html[data-theme="rock"] #board { background: rgba(14, 9, 5, .84); }
+    html[data-theme="rock"] #board { background: rgba(60,46,36,.93); }
     html[data-theme="rock"] .tray-slot { background: none; border-color: transparent; box-shadow: none; }
-    /* WOOD: papan kayu (themes/wood-bg.webp, themes/wood-panel.webp; sumber SVG ada di themes/*.svg), bingkai kayu untuk papan, skor & tray */
-    html[data-theme="wood"] { --bg1:#4a2810; --bg2:#6b3d19; --bg3:#8a5426; --accent:#ffcf5a; --accent2:#ffe08a; --accent3:#e8943a; --panel:#4a2a12; --panel-border:rgba(255,200,120,.35); --grid-cell:rgba(32,14,4,.62); --grid-cell-border:rgba(255,190,110,.10); --text:#fff3da; --text-dim:#f0cf9e; --title:#fff0cf; --gold:#ffd24d; --modal1:#7a4a22; --modal2:#33190a; }
+    
+    /* WOOD: papan kayu terang (themes/wood-bg.webp, themes/wood-panel.webp; sumber SVG ada di themes/*.svg).
+       Bingkai kayu untuk papan, skor & tray. Warna cadangan terang supaya tetap jelas walau gambar belum termuat. */
+    html[data-theme="wood"] { --bg1:#c68b52; --bg2:#d49a60; --bg3:#e0a96c; --accent:#ffcf5a; --accent2:#ffe08a; --accent3:#e8943a; --panel:#8a5a2c; --panel-border:rgba(255,215,150,.45); --grid-cell:rgba(50,24,6,.55); --grid-cell-border:rgba(255,205,140,.16); --text:#fff6e0; --text-dim:#f6dcae; --title:#fff3d4; --gold:#ffd24d; --modal1:#8a5a2c; --modal2:#4a2a10; }
     html[data-theme="wood"] body {
       background:
-        radial-gradient(ellipse at 50% 40%, rgba(255,210,140,.12) 0%, rgba(0,0,0,0) 55%),
-        linear-gradient(rgba(50,20,0,.05), rgba(40,15,0,.35)),
+        linear-gradient(rgba(255,235,200,.05), rgba(60,25,0,.10)),
         url("themes/wood-bg.webp") center top / 360px 360px repeat,
         var(--bg1);
     }
     html[data-theme="wood"] .stats-card,
-    html[data-theme="wood"] .icon-btn,
-    html[data-theme="wood"] .tray-slot {
-      background: url("themes/wood-panel.webp") center / 240px 120px repeat, var(--panel);
-      border: 3px solid #c98a45;
-      box-shadow: 0 3px 0 #5a300f, inset 0 2px 0 rgba(255,225,170,.35), inset 0 -3px 0 rgba(0,0,0,.35);
+    html[data-theme="wood"] .icon-btn {
+      background: linear-gradient(#a06832, #86531f);
+      border: 3px solid #e0a65a;
+      box-shadow: 0 3px 0 #6a3a14, inset 0 2px 0 rgba(255,225,170,.45), inset 0 -3px 0 rgba(0,0,0,.28);
     }
     html[data-theme="wood"] #board {
-      background: url("themes/wood-panel.webp") center / 240px 120px repeat, var(--panel);
-      border: 5px solid #c98a45;
+      background: linear-gradient(#a06832, #86531f);
+      border: 5px solid #e0a65a;
       border-radius: 22px;
-      box-shadow: 0 4px 0 #5a300f, 0 8px 0 rgba(0,0,0,.25), inset 0 2px 0 rgba(255,225,170,.4), inset 0 0 0 2px rgba(0,0,0,.3);
+      box-shadow: 0 4px 0 #6a3a14, 0 8px 0 rgba(0,0,0,.2), inset 0 2px 0 rgba(255,225,170,.5), inset 0 0 0 2px rgba(0,0,0,.25);
     }
-    html[data-theme="wood"] .cell { box-shadow: inset 0 3px 0 rgba(0,0,0,.5), inset 0 -1px 0 rgba(255,200,130,.14); }
+    html[data-theme="wood"] .cell { box-shadow: inset 0 3px 0 rgba(0,0,0,.45), inset 0 -1px 0 rgba(255,210,150,.18); }
+    
+    /* WOOD: kotak tempat balok (tray) dihias & dibuat jelas: dalam terang (krem-kayu), bingkai emas tebal + cincin gelap di luar,
+       paku di empat sudut, cahaya lembut di tengah. Balok warna-warni jadi kontras. */
+    html[data-theme="wood"] .tray-slot {
+      background-image:
+        radial-gradient(circle at center, #fff4cf 0 1.4px, #b9772f 2px 3.6px, rgba(60,25,0,.5) 4.2px, transparent 5px),
+        radial-gradient(circle at center, #fff4cf 0 1.4px, #b9772f 2px 3.6px, rgba(60,25,0,.5) 4.2px, transparent 5px),
+        radial-gradient(circle at center, #fff4cf 0 1.4px, #b9772f 2px 3.6px, rgba(60,25,0,.5) 4.2px, transparent 5px),
+        radial-gradient(circle at center, #fff4cf 0 1.4px, #b9772f 2px 3.6px, rgba(60,25,0,.5) 4.2px, transparent 5px),
+        radial-gradient(ellipse at 50% 40%, rgba(255,243,205,.55), rgba(255,243,205,0) 75%),
+        linear-gradient(#e9bf82, #cf9a58);
+      background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px, 100% 100%, 100% 100%;
+      background-position: 4px 4px, calc(100% - 4px) 4px, 4px calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), center, center;
+      background-repeat: no-repeat;
+      background-color: #d9a766;
+      border: 4px solid #f6cf8a;
+      border-radius: 18px;
+      box-shadow: 0 0 0 3px #7a4418, 0 6px 0 3px #5a3010, inset 0 0 0 2px #b27530, inset 0 3px 0 rgba(255,245,215,.7), inset 0 -4px 0 rgba(120,70,20,.3);
+    }
     
     * {
       box-sizing: border-box;
