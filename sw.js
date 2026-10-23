@@ -1,5 +1,5 @@
 /* Block Blast 3D – service worker (offline cache) */
-const CACHE = "block-blast-v26";
+const CACHE = "block-blast-v27";
 const ASSETS = [
   "./",
   "./index.html",
