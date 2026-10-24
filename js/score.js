@@ -3,17 +3,29 @@
 /* =========================================================
    SCORE: formula + ginti wali animation + NEW BEST
 ========================================================= */
-var COMBO_CAP = 8;          // combo multiplier ki hadd
-var BOARD_CLEAR_BONUS = 300; // poora board khali karne ka inaam
+var SCORE_PER_CELL = 10;      // har rakhe hue khane ke points
+var POINTS_PER_LINE = 500;    // 1 line = 500, 2 = 1000, 3 = 1500 ...
+var COMBO_CAP = 8;            // combo multiplier ki hadd
+var BOARD_CLEAR_BONUS = 5000; // poora board khali karne ka inaam
 
-/* n lines ek saath: 1->10, 2->30, 3->60, 4->100 ... (10 * n(n+1)/2) */
-function lineScore(n) { return 10 * n * (n + 1) / 2; }
+function lineScore(n) { return POINTS_PER_LINE * n; }
 
 function renderScoreNumbers() {
   var shown = Math.round(shownScore);
   scoreValEl.textContent = shown;
   /* best tab tak score ke sath chalta hai jab tak score hi best hai */
   bestValEl.textContent = (score >= best) ? Math.min(shown, best) : best;
+  updateCrown();
+}
+
+/* taj: best ke qareeb jate hue neeche se sunehri bharta hai; best par pohonchne par chamak uthta hai */
+function updateCrown() {
+  var fill = document.getElementById("crownFill");
+  var card = document.getElementById("crownCard");
+  if (!fill || !card) return;
+  var p = bestAtStart > 0 ? Math.min(shownScore / bestAtStart, 1) : 0;
+  fill.style.setProperty("--p", p.toFixed(3));
+  card.classList.toggle("reached", bestAtStart > 0 && score >= bestAtStart);
 }
 
 function animateScoreTo(target) {
@@ -41,7 +53,7 @@ function updateScoreUI() {
     best = score;
     lsSet(STORAGE_BEST, String(best));
   }
-  if (!newBestShown && bestAtStart > 0 && score > bestAtStart) {
+  if (!newBestShown && bestAtStart > 0 && score >= bestAtStart) {
     newBestShown = true;
     showNewBest();
   }
@@ -50,7 +62,7 @@ function updateScoreUI() {
 
 /* score card ke neeche +N udta hua */
 function showScoreFloat(text) {
-  var card = document.querySelector(".stats-card");
+  var card = document.querySelector(".score-center");
   if (!card) return;
   var f = document.createElement("div");
   f.className = "score-float";
@@ -62,10 +74,10 @@ function showScoreFloat(text) {
 function showNewBest() {
   var pop = document.createElement("div");
   pop.className = "clear-pop t2 best-pop";
-  pop.innerHTML = "NEW BEST!<small>" + best + "</small>";
+  pop.innerHTML = (score > bestAtStart ? "NEW BEST!" : "BEST!") + "<small>" + best + "</small>";
   document.body.appendChild(pop);
   setTimeout(function() { pop.remove(); }, 1100);
-  var card = document.querySelector(".stat.best");
+  var card = document.getElementById("crownCard");
   if (card) { card.classList.add("flash"); setTimeout(function() { card.classList.remove("flash"); }, 1600); }
 }
 

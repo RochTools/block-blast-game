@@ -6,7 +6,7 @@
 function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 var SIZE = 8;
-var STORAGE_BEST = "ikky_blockblast3d_best";
+var STORAGE_BEST = "ikky_blockblast3d_best_v2";
 var STORAGE_MUTE = "ikky_blockblast3d_muted";
 
 var COLORS = [

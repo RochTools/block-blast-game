@@ -70,7 +70,7 @@ function placePiece(piece, row, col) {
     cellEls[r][c].appendChild(blk);
     blockEls[r][c] = blk;
   });
-  score += piece.shape.length;
+  score += piece.shape.length * SCORE_PER_CELL;
   moves += 1;
   updateScoreUI();
   sfxPlace();
