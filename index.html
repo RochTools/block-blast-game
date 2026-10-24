@@ -19,19 +19,24 @@
 
 <body>
   
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <linearGradient id="crownGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff3b0"></stop><stop offset=".5" stop-color="#ffc933"></stop><stop offset="1" stop-color="#e08f08"></stop>
+    </linearGradient></defs></svg>
+
   <div id="app">
     
     <div class="topbar">
-      <div class="stats-card">
-        <div class="stat">
-          <span class="lbl">SCORE</span>
-          <span class="val" id="scoreVal">0</span>
+      <div class="crown-card" id="crownCard" title="Best score">
+        <div class="crown">
+          <svg class="crown-base" viewBox="0 0 24 24"><path d="M2.5 8.2l4.6 3.9L12 4.5l4.9 7.6 4.6-3.9-1.9 10.3H4.4z"></path><rect x="4.4" y="19.6" width="15.2" height="2" rx="1"></rect></svg>
+          <svg class="crown-fill" id="crownFill" viewBox="0 0 24 24"><path d="M2.5 8.2l4.6 3.9L12 4.5l4.9 7.6 4.6-3.9-1.9 10.3H4.4z"></path><rect x="4.4" y="19.6" width="15.2" height="2" rx="1"></rect></svg>
         </div>
-        <div class="stat-divider"></div>
-        <div class="stat best">
-          <span class="lbl">BEST</span>
-          <span class="val" id="bestVal">0</span>
-        </div>
+        <span class="crown-best" id="bestVal">0</span>
+      </div>
+      <div class="score-center stats-card">
+        <span class="lbl">SCORE</span>
+        <span class="val" id="scoreVal">0</span>
       </div>
       <div class="menu-wrap">
         <button class="icon-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">
@@ -83,6 +88,9 @@
   
   <div class="modal-overlay" id="gameOverOverlay">
     <div class="modal">
+      <div class="win-crown" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M2.5 8.2l4.6 3.9L12 4.5l4.9 7.6 4.6-3.9-1.9 10.3H4.4z"></path><rect x="4.4" y="19.6" width="15.2" height="2" rx="1"></rect></svg>
+      </div>
       <h2>GAME OVER</h2>
       <p>No more room for your blocks.</p>
       <div class="big-score" id="finalScore">0</div>
