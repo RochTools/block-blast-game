@@ -1,5 +1,5 @@
 /* Block Blast 3D – service worker (offline cache) */
-const CACHE = "block-blast-v29";
+const CACHE = "block-blast-v30";
 const ASSETS = [
   "./",
   "./index.html",
@@ -26,7 +26,7 @@ function precacheBlocks(c) {
     .then((list) => {
       const urls = ["./images/blocks/styles.json"];
       list.forEach((id) => BLOCK_COLORS.forEach((col) => urls.push("./images/blocks/" + id + "/" + col + ".webp")));
-      return Promise.all(urls.map((u) => c.add(u).catch(() => {})));
+      return Promise.all(urls.map((u) => c.add(new Request(u, { cache: "reload" })).catch(() => {})));
     })
     .catch(() => {});
 }
@@ -48,7 +48,7 @@ function precacheThemes(c) {
             while ((m = re.exec(txt))) { if (!/^(data:|https?:|\/)/.test(m[1])) urls.push("./themes/" + m[1]); }
           })
           .catch(() => {});
-      })).then(() => Promise.all(Array.from(new Set(urls)).map((u) => c.add(u).catch(() => {}))));
+      })).then(() => Promise.all(Array.from(new Set(urls)).map((u) => c.add(new Request(u, { cache: "reload" })).catch(() => {}))));
     })
     .catch(() => {});
 }
@@ -56,7 +56,9 @@ function precacheThemes(c) {
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches.open(CACHE)
-      .then((c) => c.addAll(ASSETS).then(() => precacheBlocks(c)).then(() => precacheThemes(c)))
+      /* har file alag se cache hoti hai: koi ek file (jaise images/block.webp) missing ho to bhi install fail nahi hota */
+      .then((c) => Promise.all(ASSETS.map((u) => c.add(new Request(u, { cache: "reload" })).catch(() => {})))
+        .then(() => precacheBlocks(c)).then(() => precacheThemes(c)))
       .then(() => self.skipWaiting())
   );
 });
@@ -73,15 +75,27 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
 
-  // Stale-while-revalidate: cache se foran kholo (tez), background me naya version le kar cache update karo
-  e.respondWith(
-    caches.open(CACHE).then((c) =>
-      c.match(req, { ignoreSearch: true }).then((hit) => {
-        const net = fetch(req)
-          .then((res) => { if (res && res.ok) c.put(req, res.clone()); return res; })
-          .catch(() => hit || c.match("./index.html"));
-        return hit || net;
-      })
-    )
-  );
+  // Stale-while-revalidate: cache se foran kholo, background me naya version le kar cache update karo
+  e.respondWith((async () => {
+    const c = await caches.open(CACHE);
+    const hit = await c.match(req, { ignoreSearch: true });
+    const net = fetch(req).then((res) => {
+      if (res && res.status === 200) c.put(req, res.clone());
+      return res;
+    });
+    if (hit) {
+      e.waitUntil(net.catch(() => {})); // background update ko beech me marne se bachao
+      return hit;
+    }
+    try {
+      return await net;
+    } catch (err) {
+      // index.html sirf page (navigate) ke liye; awaz/tasveer/css ke liye HTML dena galat hai
+      if (req.mode === "navigate") {
+        const idx = await c.match("./index.html");
+        if (idx) return idx;
+      }
+      return Response.error();
+    }
+  })());
 });
