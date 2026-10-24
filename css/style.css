@@ -690,3 +690,65 @@ footer b {
     height: 108px;
   }
 }
+
+/* ===== score animation / NEW BEST / game over stats / auto theme ===== */
+.stats-card { position: relative; }
+
+.stat .val.bump { animation: scoreBump .28s ease-out; }
+@keyframes scoreBump {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+.score-float {
+  position: absolute;
+  left: 14px;
+  top: calc(100% - 4px);
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--gold);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .45);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+  animation: scoreFloat .95s ease-out forwards;
+}
+@keyframes scoreFloat {
+  0%   { opacity: 0; transform: translateY(-6px) scale(.8); }
+  20%  { opacity: 1; transform: translateY(0) scale(1.15); }
+  100% { opacity: 0; transform: translateY(26px) scale(1); }
+}
+
+.stat.best.flash .val { animation: bestFlash .5s ease-in-out 3; }
+@keyframes bestFlash {
+  0%, 100% { transform: scale(1); filter: none; }
+  50%      { transform: scale(1.3); filter: drop-shadow(0 0 10px var(--gold)); }
+}
+
+.clear-pop.best-pop { color: #ffd84a; text-shadow: 0 0 28px rgba(255, 190, 20, .95), 0 4px 12px rgba(0, 0, 0, .45); }
+
+.modal .best-line.new {
+  font-size: 15px;
+  letter-spacing: 2px;
+  animation: bestFlash .6s ease-in-out 2;
+}
+
+.end-stats {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+.end-stats > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--panel-border);
+}
+.end-stats b { font-size: 18px; font-weight: 900; color: var(--title); }
+.end-stats span { font-size: 8px; letter-spacing: 1.5px; color: var(--text-dim); font-weight: 700; margin-top: 2px; }
+.menu-item span { white-space: nowrap; }
