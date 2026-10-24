@@ -71,6 +71,7 @@ function placePiece(piece, row, col) {
     blockEls[r][c] = blk;
   });
   score += piece.shape.length;
+  moves += 1;
   updateScoreUI();
   sfxPlace();
   checkLines();
@@ -97,6 +98,8 @@ function checkLines() {
   }
   
   combo += 1;
+  if (combo > maxCombo) maxCombo = combo;
+  linesTotal += totalLines;
   var cellsToClear = {};
   fullRows.forEach(function(r) {
     for (var c = 0; c < SIZE; c++) cellsToClear[r + "_" + c] = [r, c];
@@ -106,9 +109,10 @@ function checkLines() {
   });
   
   var keys = Object.keys(cellsToClear);
-  var gained = totalLines * 10 * combo;
+  var gained = lineScore(totalLines) * Math.min(combo, COMBO_CAP);
   score += gained;
   updateScoreUI();
+  showScoreFloat("+" + gained);
   sfxClear(totalLines);
   buzz(totalLines);
   
@@ -139,6 +143,26 @@ function checkLines() {
     boardWrap.classList.add("shake");
     setTimeout(function() { boardWrap.classList.remove("shake"); }, 360);
   }
+  
+  /* poora board khali? bara inaam */
+  var empty = true;
+  for (var er = 0; er < SIZE && empty; er++) {
+    for (var ec = 0; ec < SIZE; ec++) { if (grid[er][ec]) { empty = false; break; } }
+  }
+  if (empty) {
+    score += BOARD_CLEAR_BONUS;
+    updateScoreUI();
+    showScoreFloat("+" + BOARD_CLEAR_BONUS);
+    setTimeout(function() {
+      var pop = document.createElement("div");
+      pop.className = "clear-pop t3";
+      pop.innerHTML = "PERFECT!<small>+" + BOARD_CLEAR_BONUS + "</small>";
+      document.body.appendChild(pop);
+      setTimeout(function() { pop.remove(); }, 1000);
+    }, 450);
+  }
+  
+  autoThemeCheck(totalLines);
   
   setTimeout(function() {
     dying.forEach(function(o) { if (o.el.parentNode) o.el.remove(); });

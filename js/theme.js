@@ -144,3 +144,41 @@ function showThemeName(name) {
   document.body.appendChild(pop);
   setTimeout(function() { pop.remove(); }, 620);
 }
+
+/* ===== AUTO THEME (menu me Off/On, default Off) =====
+   On ho to har AUTO_THEME_LINES lines saaf karne par agli theme lag jati hai
+   (chaal aur animation khatam hone ke baad, beech me nahi). */
+var STORAGE_AUTOTHEME = "ikky_blockblast3d_autotheme";
+var AUTO_THEME_LINES = 10;
+var autoTheme = lsGet(STORAGE_AUTOTHEME) === "1";
+var autoThemeLines = 0;
+
+function updateAutoThemeLabel() {
+  var l = document.getElementById("autoThemeLabel");
+  if (l) l.textContent = "Auto Theme: " + (autoTheme ? "On" : "Off");
+}
+
+function autoThemeReset() { autoThemeLines = 0; }
+
+function autoThemeCheck(clearedLines) {
+  if (!autoTheme || THEMES.length < 2) return;
+  autoThemeLines += clearedLines;
+  if (autoThemeLines < AUTO_THEME_LINES) return;
+  autoThemeLines = 0;
+  setTimeout(function tryApply() {
+    if (isGameOver) return;
+    if (dragState) { setTimeout(tryApply, 300); return; } // kheench rahe ho to intezar
+    themeIdx = (themeIdx + 1) % THEMES.length;
+    applyTheme();
+    recolorAll();
+    showThemeName(THEMES[themeIdx].name);
+  }, 900);
+}
+
+document.getElementById("autoThemeBtn").addEventListener("click", function() {
+  autoTheme = !autoTheme;
+  autoThemeLines = 0;
+  lsSet(STORAGE_AUTOTHEME, autoTheme ? "1" : "0");
+  updateAutoThemeLabel();
+});
+updateAutoThemeLabel();
