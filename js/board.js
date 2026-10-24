@@ -136,6 +136,7 @@ function checkLines() {
   });
   
   spawnClearParticles(dying, totalLines, combo);
+  showBoardScore(keys.map(function(k) { return cellsToClear[k]; }), gained, totalLines);
   showCombo(totalLines, combo, gained);
   if (totalLines >= 2 || combo >= 3) {
     boardWrap.classList.remove("shake");

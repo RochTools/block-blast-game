@@ -10,7 +10,7 @@ function showCombo(lines, comboCount, gained) {
   pop.className = "clear-pop" + tier;
   var label = lines >= 3 ? "AMAZING!" : (lines >= 2 ? "MULTI CLEAR!" : "CLEAR!");
   if (comboCount >= 3) label = "COMBO x" + comboCount + "!";
-  pop.innerHTML = label + "<small>+" + gained + "</small>";
+  pop.innerHTML = label;
   document.body.appendChild(pop);
   setTimeout(function() { pop.remove(); }, 950);
 }
@@ -67,4 +67,24 @@ function spawnClearParticles(dying, lines, comboCount) {
   }
   document.body.appendChild(frag);
   setTimeout(function() { made_els.forEach(function(el) { el.remove(); }); }, 1300);
+}
+
+/* jitne points bane wo usi saaf hui line ki jagah board par likhe aate hain aur ghaib ho jate hain */
+function showBoardScore(cells, gained, lines) {
+  var sx = 0, sy = 0, n = 0;
+  for (var i = 0; i < cells.length; i++) {
+    var el = cellEls[cells[i][0]][cells[i][1]];
+    if (!el) continue;
+    var rc = el.getBoundingClientRect();
+    sx += rc.left + rc.width / 2; sy += rc.top + rc.height / 2; n++;
+  }
+  if (!n) return;
+  var pop = document.createElement("div");
+  pop.className = "board-pop" + (lines >= 3 ? " t3" : (lines >= 2 || combo >= 3 ? " t2" : ""));
+  pop.textContent = "+" + gained;
+  var x = Math.max(60, Math.min(window.innerWidth - 60, sx / n));
+  pop.style.left = x + "px";
+  pop.style.top = (sy / n) + "px";
+  document.body.appendChild(pop);
+  setTimeout(function() { pop.remove(); }, 1150);
 }
