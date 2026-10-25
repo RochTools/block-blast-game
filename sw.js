@@ -7,7 +7,7 @@
  * Install par sirf zaroori cheezen (game + pehli theme + pehla block style + awazen) save hoti hain.
  * Baqi themes/block styles: ya to pehli dafa istemal hone par, ya game chalne ke 10 sec baad (page message)
  */
-const CODE_VERSION = 43;
+const CODE_VERSION = 44;
 const ASSET_VERSION = 2;
 const CODE_CACHE = "bb-code-v" + CODE_VERSION;
 const ASSET_CACHE = "bb-assets-v" + ASSET_VERSION;
