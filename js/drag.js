@@ -44,8 +44,10 @@ function attachDrag(hitEl, slotEl, index, bounds, cellPx) {
           blk.style.setProperty("--c1", piece.color.c1);
           blk.style.setProperty("--c2", piece.color.c2);
           blk.setAttribute("data-i", piece.color.idx || 0);
-          blk.style.width = "100%";
-          blk.style.height = "100%";
+          /* gap ke aadhe hisse tak phela do taake ghost ke blocks bhi ek dusre se milen */
+          blk.style.width = (cellSize + gapSize) + "px";
+          blk.style.height = (cellSize + gapSize) + "px";
+          blk.style.margin = (-gapSize / 2) + "px";
           cellDiv.appendChild(blk);
         }
         ghost.appendChild(cellDiv);
