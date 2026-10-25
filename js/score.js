@@ -11,46 +11,50 @@ var BOARD_CLEAR_BONUS = 5000; // poora board khali karne ka inaam
 function lineScore(n) { return POINTS_PER_LINE * n; }
 
 var lastShownInt = -1, lastBestShown = -1, lastCrownP = -1;
-
-/* screen par dikhne wala nambar: bade farq par 10-10, chhote par 5-5, aakhir me 1-1 ke qadam
-   (aakhri digit tez na phadphadae; chal bilkul narm lagti hai) */
-function displayValue() {
-  var rem = Math.abs(score - shownScore);
-  var q = rem > 300 ? 10 : (rem > 60 ? 5 : 1);
-  var v = Math.round(shownScore / q) * q;
-  return v > score ? score : v;
-}
+var crownCardEl = null, crownFillBoxEl = null, scoreCenterEl = null;
 
 /* DOM tabhi chhua jata hai jab nambar sach me badla ho (tez aur halka) */
 function renderScoreNumbers() {
-  var shown = displayValue();
-  if (shown !== lastShownInt) { lastShownInt = shown; scoreValEl.textContent = shown; }
+  var shown = Math.round(shownScore);
+  if (shown !== lastShownInt) {
+    lastShownInt = shown;
+    scoreValEl.textContent = shown;
+  }
   /* best tab tak score ke sath chalta hai jab tak score hi best hai */
   var bshow = (score >= best) ? Math.min(shown, best) : best;
-  if (bshow !== lastBestShown) { lastBestShown = bshow; bestValEl.textContent = bshow; }
+  if (bshow !== lastBestShown) {
+    lastBestShown = bshow;
+    bestValEl.textContent = bshow;
+  }
   updateCrown();
 }
 
 /* taj: best ke qareeb jate hue neeche se sunehri bharta hai; best par pohonchne par chamak uthta hai */
 function updateCrown() {
-  var card = document.getElementById("crownCard");
-  if (!card) return;
+  if (!crownCardEl) crownCardEl = document.getElementById("crownCard");
+  if (!crownCardEl) return;
+  if (!crownFillBoxEl) crownFillBoxEl = crownCardEl.querySelector(".crown-fillbox");
+
   var p = bestAtStart > 0 ? Math.min(shownScore / bestAtStart, 1) : 0;
-  /* sirf 2% se zyada farq par (ya 0/100% par) -> CSS transition khud narm bharta hai */
-  if (Math.abs(p - lastCrownP) >= 0.02 || ((p === 0 || p === 1) && p !== lastCrownP)) {
+  if (Math.abs(p - lastCrownP) >= 0.005 || ((p === 0 || p === 1) && p !== lastCrownP)) {
     lastCrownP = p;
-    card.style.setProperty("--p", p.toFixed(3));
+    var pStr = p.toFixed(3);
+    if (crownFillBoxEl) crownFillBoxEl.style.setProperty("--p", pStr);
+    else crownCardEl.style.setProperty("--p", pStr);
   }
   var reached = bestAtStart > 0 && score >= bestAtStart;
-  if (reached !== card.classList.contains("reached")) card.classList.toggle("reached", reached);
+  if (reached !== crownCardEl.classList.contains("reached")) {
+    crownCardEl.classList.toggle("reached", reached);
+  }
 }
 
-/* ===== SMOOTH GINTI =====
-   Pehle har naye point par "ease" dobara shuru hota tha, is liye raftar jhatke se badalti thi.
-   Ab ek narm spring (critically damped, "SmoothDamp") hai: ghati hui raftar kabhi achanak nahi
-   badalti, chahe beech me aur points aa jayen. Alag rAF par chalti hai, game ko nahi rokti. */
-var SCORE_SMOOTH_TIME = 0.6;   // bara = aur aaram se (seconds)
-var scoreVel = 0, scoreLastT = 0, scoreBumpAt = 0, scoreLastPaint = 0;
+/* ===== SMOOTH GINTI (60 FPS / High Refresh) =====
+   Snappy critically damped spring (SmoothDamp):
+   - Har frame (60fps/120fps) par chalta hai, koi artificial 30fps/33ms rukawat nahi.
+   - Tez settling time (~0.7s) taake agla block drag karte waqt counter pehle hi complete ho chuka ho.
+   - Lambi tail ko khatam karne ke liye < 1 point par target par snap ho jata hai. */
+var SCORE_SMOOTH_TIME = 0.22;
+var scoreVel = 0, scoreLastT = 0, scoreBumpAt = 0;
 
 function scoreStep(now) {
   var dt = Math.min((now - scoreLastT) / 1000, 0.05); // tab/lag ke baad jhatka nahi
@@ -61,29 +65,42 @@ function scoreStep(now) {
   var temp = (scoreVel + omega * change) * dt;
   scoreVel = (scoreVel - omega * temp) * e;
   shownScore = score + (change + temp) * e;
-  if (Math.abs(score - shownScore) < 0.5 && Math.abs(scoreVel) < 2) {
-    shownScore = score; scoreVel = 0; scoreAnim = null;
+
+  if (Math.abs(score - shownScore) < 1 && Math.abs(scoreVel) < 10) {
+    shownScore = score;
+    scoreVel = 0;
+    scoreAnim = null;
     renderScoreNumbers();
     return;
   }
-  /* nambar sirf ~30 baar/second likho (physics har frame chalti hai); chaal waisi hi narm lagti hai */
-  if (now - scoreLastPaint >= 33) { scoreLastPaint = now; renderScoreNumbers(); }
+
+  renderScoreNumbers();
   scoreAnim = requestAnimationFrame(scoreStep);
 }
 
 function animateScoreTo(target) {
   if (REDUCE_MOTION || target < shownScore) {
     if (scoreAnim) { cancelAnimationFrame(scoreAnim); scoreAnim = null; }
-    shownScore = target; scoreVel = 0; renderScoreNumbers(); return;
+    shownScore = target;
+    scoreVel = 0;
+    renderScoreNumbers();
+    return;
   }
-  /* halka ubhaar sirf bade points par, aur har 400ms me ek baar */
+  /* Score card par halka sa bump effect */
   var now = performance.now();
-  if (target - shownScore >= 100 && now - scoreBumpAt > 400 && scoreValEl.animate) {
+  if (target - shownScore >= 100 && now - scoreBumpAt > 350) {
     scoreBumpAt = now;
-    scoreValEl.animate([{ transform: "scale(1)" }, { transform: "scale(1.12)" }, { transform: "scale(1)" }],
-      { duration: 360, easing: "ease-in-out" });
+    if (!scoreCenterEl) scoreCenterEl = document.querySelector(".score-center");
+    if (scoreCenterEl) {
+      scoreCenterEl.classList.remove("bump");
+      void scoreCenterEl.offsetWidth;
+      scoreCenterEl.classList.add("bump");
+    }
   }
-  if (!scoreAnim) { scoreLastT = now; scoreAnim = requestAnimationFrame(scoreStep); }
+  if (!scoreAnim) {
+    scoreLastT = performance.now();
+    scoreAnim = requestAnimationFrame(scoreStep);
+  }
 }
 
 function updateScoreUI() {
@@ -115,8 +132,11 @@ function showNewBest() {
   pop.innerHTML = (score > bestAtStart ? "NEW BEST!" : "BEST!") + "<small>" + best + "</small>";
   document.body.appendChild(pop);
   setTimeout(function() { pop.remove(); }, 1100);
-  var card = document.getElementById("crownCard");
-  if (card) { card.classList.add("flash"); setTimeout(function() { card.classList.remove("flash"); }, 1600); }
+  if (!crownCardEl) crownCardEl = document.getElementById("crownCard");
+  if (crownCardEl) {
+    crownCardEl.classList.add("flash");
+    setTimeout(function() { crownCardEl.classList.remove("flash"); }, 1600);
+  }
 }
 
 /* naya game: sab kuch zero */
@@ -125,5 +145,6 @@ function resetScoreState() {
   score = 0; shownScore = 0; scoreVel = 0;
   combo = 0; moves = 0; linesTotal = 0; maxCombo = 0;
   bestAtStart = best; newBestShown = false;
+  lastCrownP = -1; lastShownInt = -1; lastBestShown = -1;
   renderScoreNumbers();
 }
