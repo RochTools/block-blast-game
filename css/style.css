@@ -889,3 +889,10 @@ footer b {
   70%  { opacity: 1; transform: translate(-50%, -85%) scale(1); }
   100% { opacity: 0; transform: translate(-50%, -140%) scale(.95); }
 }
+
+/* ===== BLOCKS ek dusre se mile hue (koi gap nahi) =====
+   board ka gap 4px aur cell ka border 1px: block ko cell se 3px bahar tak phelate hain */
+#board { --bgap: 4px; }
+.cell .block { inset: calc(-1px - var(--bgap) / 2); }
+/* tray ke tukron me bhi gap 3px hai: aadha-aadha phela do */
+.piece-grid .block { inset: -1.5px !important; }
