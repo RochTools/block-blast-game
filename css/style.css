@@ -772,11 +772,20 @@ footer b {
 .crown { position: relative; width: 30px; height: 30px; }
 .crown svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .crown-base { fill: rgba(255, 255, 255, .10); stroke: rgba(255, 201, 51, .55); stroke-width: 1.1; stroke-linejoin: round; }
-.crown-fill {
+/* taj ka sunehri hissa: do transform (box neeche, andar ka svg ulta upar) -> sirf GPU, repaint nahi */
+.crown-fillbox {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transform: translateY(calc((1 - var(--p, 0)) * 100%));
+  transition: transform .5s ease-out;
+  will-change: transform;
+}
+.crown-fillbox .crown-fill {
   fill: url(#crownGrad);
-  --p: 0;
-  clip-path: inset(calc((1 - var(--p)) * 100%) 0 0 0);
-  transition: clip-path .45s ease-out;
+  transform: translateY(calc((var(--p, 0) - 1) * 100%));
+  transition: transform .5s ease-out;
+  will-change: transform;
 }
 .crown-best {
   font-size: 10px;
@@ -918,4 +927,4 @@ footer b {
 
 /* score card ka lay-out alag rakho: nambar badalne se bahar kuch dobara napa na jaye */
 .score-center { contain: layout; }
-.score-center .val { will-change: contents; }
+.score-center .val { will-change: transform; } /* apni alag layer: nambar badalne par sirf ye chhota hissa dobara banta hai */
