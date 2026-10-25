@@ -176,7 +176,7 @@ function showLineGlow(lines) {
   while (d.bars.length < need) {
     var bar = document.createElement("div");
     bar.className = "line-glow";
-    bar.style.opacity = "0";
+    bar.style.display = "none";
     d.layer.appendChild(bar);
     d.bars.push(bar);
   }
@@ -186,16 +186,17 @@ function showLineGlow(lines) {
     b.style.width = (span + pad * 2) + "px";
     b.style.height = (d.cellSize + pad * 2) + "px";
     b.style.transform = "translate3d(" + (d.baseX - pad) + "px," + (d.baseY + r * d.stepSize - pad) + "px,0)";
-    b.style.opacity = "";
+    b.style.display = "";
   });
   lines.cols.forEach(function(c) {
     var b = d.bars[n++];
     b.style.width = (d.cellSize + pad * 2) + "px";
     b.style.height = (span + pad * 2) + "px";
     b.style.transform = "translate3d(" + (d.baseX + c * d.stepSize - pad) + "px," + (d.baseY - pad) + "px,0)";
-    b.style.opacity = "";
+    b.style.display = "";
   });
-  for (; n < d.bars.length; n++) { d.bars[n].style.opacity = "0"; }
+  /* baqi bars chhupao. NOTE: opacity:0 kaam nahi karta kyunke CSS animation inline opacity ko dabati hai -> display:none */
+  for (; n < d.bars.length; n++) { d.bars[n].style.display = "none"; }
 }
 
 function updateHoverHighlight(x, y) {
@@ -288,14 +289,20 @@ function onPointerUp(ev) {
     dragState.slotEl.style.opacity = "1";
     renderTray();
     refillTrayIfEmpty();
-    setTimeout(function() {
-      if (!anyValidMoveExists()) {
-        triggerGameOver();
-      }
-    }, 200);
+    /* jagah khatam ho gayi? game abhi khatam NAHI: khiladi ko khud koshish karne do */
+    setTimeout(function() { stuck = !anyValidMoveExists(); }, 200);
   } else {
     dragState.slotEl.style.opacity = "1";
-    if (valid === false) { sfxBad(); }
+    if (valid === false || stuck) { sfxBad(); }
+    /* jagah nahi thi aur khiladi ne tukra utha kar chhor diya (ya sirf chhua) -> ab game over.
+       pointercancel (system ne touch cancel kiya) koshish nahi mana jata */
+    if (stuck && ev.type !== "pointercancel") {
+      setTimeout(function() {
+        if (!stuck || isGameOver) return;
+        abortDrag();
+        triggerGameOver();
+      }, 500);
+    }
   }
   dragState = null;
 }

@@ -17,6 +17,7 @@ var shownScore = 0;     // screen par dikhne wala (ginti wala) score
 var scoreAnim = null;
 var tray = [null, null, null]; // {shape,color,used}
 var isGameOver = false;
+var stuck = false; // koi tukra kahin nahi baith sakta; khiladi ki koshish ka intezar
 var audioCtx = null;
 
 /* =========================================================

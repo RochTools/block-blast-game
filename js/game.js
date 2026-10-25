@@ -64,6 +64,7 @@ function clearConfetti() {
 
 function restartGame() {
   isGameOver = false;
+  stuck = false;
   resetScoreState();
   autoThemeReset();
   buildBoard();
