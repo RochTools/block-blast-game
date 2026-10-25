@@ -150,7 +150,9 @@ function renderTray() {
     var maxDim = Math.max(bounds.rows, bounds.cols, 3);
     var pg = document.createElement("div");
     pg.className = "piece-grid";
-    var cellPx = Math.max(16, Math.min(24, Math.floor(90 / maxDim)));
+    /* tukra slot ke andar poora aaye (4-5 lambe bhi na katein): slot ki chaurai se hisab */
+    var availPx = Math.max(60, (slot.clientWidth || 100) - 12);
+    var cellPx = Math.max(12, Math.min(24, Math.floor((availPx - 3 * (maxDim - 1)) / maxDim)));
     pg.style.gridTemplateColumns = "repeat(" + bounds.cols + ", " + cellPx + "px)";
     pg.style.gridTemplateRows = "repeat(" + bounds.rows + ", " + cellPx + "px)";
     
