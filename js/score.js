@@ -12,9 +12,18 @@ function lineScore(n) { return POINTS_PER_LINE * n; }
 
 var lastShownInt = -1, lastBestShown = -1, lastCrownP = -1;
 
+/* screen par dikhne wala nambar: bade farq par 10-10, chhote par 5-5, aakhir me 1-1 ke qadam
+   (aakhri digit tez na phadphadae; chal bilkul narm lagti hai) */
+function displayValue() {
+  var rem = Math.abs(score - shownScore);
+  var q = rem > 300 ? 10 : (rem > 60 ? 5 : 1);
+  var v = Math.round(shownScore / q) * q;
+  return v > score ? score : v;
+}
+
 /* DOM tabhi chhua jata hai jab nambar sach me badla ho (tez aur halka) */
 function renderScoreNumbers() {
-  var shown = Math.round(shownScore);
+  var shown = displayValue();
   if (shown !== lastShownInt) { lastShownInt = shown; scoreValEl.textContent = shown; }
   /* best tab tak score ke sath chalta hai jab tak score hi best hai */
   var bshow = (score >= best) ? Math.min(shown, best) : best;
@@ -36,29 +45,44 @@ function updateCrown() {
   if (reached !== card.classList.contains("reached")) card.classList.toggle("reached", reached);
 }
 
-/* ginti ki raftar: jitne zyada points, utna zyada waqt (aaram se), max 2.4 second.
-   ye rAF par alag chalti hai, game ya drag ko nahi rokti. */
-function animateScoreTo(target) {
-  if (scoreAnim) { cancelAnimationFrame(scoreAnim); scoreAnim = null; }
-  var from = shownScore;
-  if (REDUCE_MOTION || target <= from) { shownScore = target; renderScoreNumbers(); return; }
-  var diff = target - from;
-  var dur = Math.min(300 + diff * 1.6, 2400);
-  var t0 = performance.now();
-  /* halka sa ubhaar (reflow ke bagair) sirf bade points par */
-  if (diff >= 100 && scoreValEl.animate) {
-    scoreValEl.animate([{ transform: "scale(1)" }, { transform: "scale(1.15)" }, { transform: "scale(1)" }],
-      { duration: 320, easing: "ease-out" });
-  }
-  function step(now) {
-    var k = Math.min((now - t0) / dur, 1);
-    k = 1 - (1 - k) * (1 - k); // narm ease-out (cubic se kam tez)
-    shownScore = from + diff * k;
+/* ===== SMOOTH GINTI =====
+   Pehle har naye point par "ease" dobara shuru hota tha, is liye raftar jhatke se badalti thi.
+   Ab ek narm spring (critically damped, "SmoothDamp") hai: ghati hui raftar kabhi achanak nahi
+   badalti, chahe beech me aur points aa jayen. Alag rAF par chalti hai, game ko nahi rokti. */
+var SCORE_SMOOTH_TIME = 0.6;   // bara = aur aaram se (seconds)
+var scoreVel = 0, scoreLastT = 0, scoreBumpAt = 0;
+
+function scoreStep(now) {
+  var dt = Math.min((now - scoreLastT) / 1000, 0.05); // tab/lag ke baad jhatka nahi
+  scoreLastT = now;
+  var omega = 2 / SCORE_SMOOTH_TIME, x = omega * dt;
+  var e = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+  var change = shownScore - score;
+  var temp = (scoreVel + omega * change) * dt;
+  scoreVel = (scoreVel - omega * temp) * e;
+  shownScore = score + (change + temp) * e;
+  if (Math.abs(score - shownScore) < 0.5 && Math.abs(scoreVel) < 2) {
+    shownScore = score; scoreVel = 0; scoreAnim = null;
     renderScoreNumbers();
-    if (now - t0 < dur) scoreAnim = requestAnimationFrame(step);
-    else { scoreAnim = null; shownScore = target; renderScoreNumbers(); }
+    return;
   }
-  scoreAnim = requestAnimationFrame(step);
+  renderScoreNumbers();
+  scoreAnim = requestAnimationFrame(scoreStep);
+}
+
+function animateScoreTo(target) {
+  if (REDUCE_MOTION || target < shownScore) {
+    if (scoreAnim) { cancelAnimationFrame(scoreAnim); scoreAnim = null; }
+    shownScore = target; scoreVel = 0; renderScoreNumbers(); return;
+  }
+  /* halka ubhaar sirf bade points par, aur har 400ms me ek baar */
+  var now = performance.now();
+  if (target - shownScore >= 100 && now - scoreBumpAt > 400 && scoreValEl.animate) {
+    scoreBumpAt = now;
+    scoreValEl.animate([{ transform: "scale(1)" }, { transform: "scale(1.12)" }, { transform: "scale(1)" }],
+      { duration: 360, easing: "ease-in-out" });
+  }
+  if (!scoreAnim) { scoreLastT = now; scoreAnim = requestAnimationFrame(scoreStep); }
 }
 
 function updateScoreUI() {
@@ -97,7 +121,7 @@ function showNewBest() {
 /* naya game: sab kuch zero */
 function resetScoreState() {
   if (scoreAnim) { cancelAnimationFrame(scoreAnim); scoreAnim = null; }
-  score = 0; shownScore = 0;
+  score = 0; shownScore = 0; scoreVel = 0;
   combo = 0; moves = 0; linesTotal = 0; maxCombo = 0;
   bestAtStart = best; newBestShown = false;
   renderScoreNumbers();

@@ -27,32 +27,45 @@ function setThemes(list) {
   var ok = list.filter(function(t) { return t && typeof t.id === "string" && /^[a-z0-9_-]+$/i.test(t.id); });
   if (!ok.length) ok = DEFAULT_THEMES;
   THEMES = ok.map(function(t) { return { id: t.id, name: t.name || t.id, blocks: COLORS }; });
-  THEMES.forEach(function(t) { ensureThemeCss(t.id); });
   var saved = lsGet(STORAGE_THEME);
   themeIdx = 0;
   for (var ti = 0; ti < THEMES.length; ti++) { if (THEMES[ti].id === saved) themeIdx = ti; }
   applyTheme();
 }
 
+/* sirf mojooda theme ki CSS lagti hai; naye theme par pehle CSS aati hai phir tabdeeli (jhalak nahi) */
+var themeSeq = 0;
 function applyTheme() {
   var th = THEMES[themeIdx];
-  document.documentElement.setAttribute("data-theme", th.id);
   COLORS = th.blocks;
   try { lsSet(STORAGE_THEME, th.id); } catch (e) {}
+  var seq = ++themeSeq;
   var l = ensureThemeCss(th.id);
-  if (l.sheet) { markReady(); }
-  else {
-    l.addEventListener("load", markReady);
-    l.addEventListener("error", markReady);
-    setTimeout(markReady, 1200);
+  function commit() {
+    if (seq !== themeSeq) return; // tez tez badalne par sirf aakhri jeete
+    document.documentElement.setAttribute("data-theme", th.id);
+    markReady();
   }
+  if (l.sheet || l.getAttribute("data-done")) { commit(); return; }
+  l.addEventListener("load", function() { l.setAttribute("data-done", "1"); commit(); }, { once: true });
+  l.addEventListener("error", commit, { once: true });
+  setTimeout(commit, 1200);
 }
 
-/* langsung pakai tema bawaan (cepat), lalu timpa dengan themes/themes.json kalau ada */
-setThemes(DEFAULT_THEMES);
+/* langsung pakai tema bawaan (cepat), lalu timpa dengan themes/themes.json kalau ada.
+   Khiladi ki chuni hui theme bhi shuru ki list me shamil hoti hai, warna ye pehle wood laga kar
+   saved theme ko overwrite kar deta tha (emerald/amethyst har reload par wood ban jate the). */
+var _savedTheme = lsGet(STORAGE_THEME);
+var _initialThemes = DEFAULT_THEMES.slice();
+if (_savedTheme && /^[a-z0-9_-]+$/i.test(_savedTheme) && !_initialThemes.some(function(t) { return t.id === _savedTheme; })) {
+  _initialThemes.push({ id: _savedTheme, name: _savedTheme });
+}
+setThemes(_initialThemes);
 try {
   fetch("themes/themes.json").then(function(r) { return r.ok ? r.json() : null; }).then(function(list) {
-    if (Array.isArray(list) && list.length) setThemes(list);
+    if (!Array.isArray(list) || !list.length) return;
+    var same = JSON.stringify(list.map(function(t) { return t && t.id; })) === JSON.stringify(THEMES.map(function(t) { return t.id; }));
+    if (!same) setThemes(list);
   }).catch(function() {});
 } catch (e) {}
 
@@ -120,7 +133,9 @@ function applyBlockStyle() {
 setBlockStyles(["glossy", "gem", "stone", "crystal", "ice"]);
 try {
   fetch("images/blocks/styles.json").then(function(r) { return r.ok ? r.json() : null; }).then(function(list) {
-    if (Array.isArray(list) && list.length) setBlockStyles(list);
+    if (!Array.isArray(list) || !list.length) return;
+    var cur = BSTYLES.filter(function(s) { return s.id !== "classic"; }).map(function(s) { return s.id; });
+    if (JSON.stringify(list) !== JSON.stringify(cur)) setBlockStyles(list); // wahi list ho to dobara na lagao
   }).catch(function() {});
 } catch (e) {}
 

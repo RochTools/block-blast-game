@@ -88,14 +88,19 @@ function synthOver() {
 var SOUND_FILES = { pick: "sounds/pick.mp3", place: "sounds/place.mp3", clear: "sounds/clear.mp3",
   bad: "sounds/bad.mp3", gameover: "sounds/gameover.mp3", click: "sounds/Click.mp3" };
 var SOUND_VOL = { pick: 0.8, place: 0.9, clear: 1, bad: 0.7, gameover: 1, click: 0.7 };
-var sndBuf = {}, sndBusy = {}, sndTries = {};
+var sndBuf = {}, sndTries = {}, sndRunning = false;
+var SOUND_ORDER = ["place", "pick", "click", "clear", "bad", "gameover"]; // zaroori awazen pehle
 
-/* har awaz alag load hoti hai; fail ho to agli dafa (max 5 baar) dobara koshish */
+/* awazen ek ek kar ke decode hoti hain (pehle touch par 6 ek sath CPU par bojh na dalen).
+   fail ho to agli dafa (max 5 baar) dobara koshish */
 function loadSounds() {
-  if (!audioCtx) return;
-  Object.keys(SOUND_FILES).forEach(function(k) {
-    if (sndBuf[k] || sndBusy[k] || (sndTries[k] || 0) >= 5) return;
-    sndBusy[k] = true;
+  if (!audioCtx || sndRunning) return;
+  var todo = SOUND_ORDER.filter(function(k) { return !sndBuf[k] && (sndTries[k] || 0) < 5; });
+  if (!todo.length) return;
+  sndRunning = true;
+  (function next(i) {
+    if (i >= todo.length) { sndRunning = false; return; }
+    var k = todo[i];
     sndTries[k] = (sndTries[k] || 0) + 1;
     fetch(SOUND_FILES[k]).then(function(r) {
       if (!r.ok) throw new Error("bad status");
@@ -105,9 +110,10 @@ function loadSounds() {
         var p = audioCtx.decodeAudioData(ab, res, rej);
         if (p && p.catch) p.catch(rej);
       });
-    }).then(function(buf) { sndBuf[k] = buf; sndBusy[k] = false; })
-      .catch(function() { sndBusy[k] = false; /* abhi synth chalega */ });
-  });
+    }).then(function(buf) { sndBuf[k] = buf; })
+      .catch(function() { /* abhi synth chalega */ })
+      .then(function() { setTimeout(function() { next(i + 1); }, 80); });
+  })(0);
 }
 
 function playSound(name, rate) {

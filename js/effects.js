@@ -16,6 +16,7 @@ function showCombo(lines, comboCount, gained) {
 }
 
 var PARTICLE_HEX = ["#ff4d4d", "#ff9a2e", "#ffd93d", "#3ddc6a", "#3dd9ff", "#4d7cff", "#b05dff", "#ff4fb8"];
+var LOW_END = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 2;
 var REDUCE_MOTION = false;
 try { REDUCE_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
 
@@ -25,6 +26,7 @@ function spawnClearParticles(dying, lines, comboCount) {
   var useTheme = document.documentElement.getAttribute("data-bstyle") === "classic";
   var perCell = lines >= 2 ? 3 : 2;
   var cap = 44 + Math.min(comboCount, 5) * 6;
+  if (LOW_END) cap = Math.round(cap * 0.5); // kamzor phone par aadhe zarre
   var made = 0;
   var frag = document.createDocumentFragment();
   var made_els = [];
