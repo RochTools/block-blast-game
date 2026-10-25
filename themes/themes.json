@@ -1,8 +1,8 @@
 [
-  { "id": "wood", "name": "Wood" },
-  { "id": "rock", "name": "Rock Wall" },
-  { "id": "ice", "name": "Ice" },
-  { "id": "emerald", "name": "Emerald" },
-  { "id": "amethyst", "name": "Amethyst Crystal" },
-  { "id": "jungle", "name": "Jungle" }
+  {"id": "wood", "name": "Wood", "bstyle": "glossy"},
+  {"id": "rock", "name": "Rock Wall", "bstyle": "stone"},
+  {"id": "ice", "name": "Ice", "bstyle": "ice"},
+  {"id": "emerald", "name": "Emerald", "bstyle": "gem"},
+  {"id": "amethyst", "name": "Amethyst Crystal", "bstyle": "crystal"},
+  {"id": "jungle", "name": "Jungle", "bstyle": "parrot"}
 ]
