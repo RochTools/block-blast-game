@@ -32,7 +32,7 @@ function ensureThemeCss(id) {
 function setThemes(list) {
   var ok = list.filter(function(t) { return t && typeof t.id === "string" && /^[a-z0-9_-]+$/i.test(t.id); });
   if (!ok.length) ok = DEFAULT_THEMES;
-  THEMES = ok.map(function(t) { return { id: t.id, name: t.name || t.id, blocks: COLORS }; });
+  THEMES = ok.map(function(t) { return { id: t.id, name: t.name || t.id, bstyle: (typeof t.bstyle === "string" ? t.bstyle : ""), blocks: COLORS }; });
   var saved = lsGet(STORAGE_THEME);
   themeIdx = 0;
   for (var ti = 0; ti < THEMES.length; ti++) { if (THEMES[ti].id === saved) themeIdx = ti; }
@@ -124,19 +124,32 @@ function setBlockStyles(list) {
   var saved = lsGet(STORAGE_BSTYLE);
   bstyleIdx = 0;
   for (var bi = 0; bi < BSTYLES.length; bi++) { if (BSTYLES[bi].id === saved) bstyleIdx = bi; }
-  applyBlockStyle();
+  applyBlockStyle(true); // shuru me save nahi karte, warna chuni hui style (parrot/bevel) overwrite ho jati thi
+  if (!saved && THEMES.length) themeBlockStyle(THEMES[themeIdx]); // naye khiladi ko theme ki apni style
 }
 
-function applyBlockStyle() {
+/* har theme ki apni block style: themes.json -> {"id":"jungle","name":"Jungle","bstyle":"parrot"}
+   Theme badalne par (button ya Auto Theme) ye style lag jati hai; khiladi Blocks button se phir bhi badal sakta hai. */
+function themeBlockStyle(th) {
+  if (!th || !th.bstyle || !BSTYLES.length) return;
+  for (var bj = 0; bj < BSTYLES.length; bj++) {
+    if (BSTYLES[bj].id === th.bstyle) { bstyleIdx = bj; applyBlockStyle(); return; }
+  }
+}
+
+function applyBlockStyle(noSave) {
   var cur = BSTYLES[bstyleIdx];
   document.documentElement.setAttribute("data-bstyle", cur.id);
   var l = document.getElementById("blockStyleLabel");
   if (l) l.textContent = "Blocks: " + cur.name;
-  try { lsSet(STORAGE_BSTYLE, cur.id); } catch (e) {}
+  if (!noSave) { try { lsSet(STORAGE_BSTYLE, cur.id); } catch (e) {} }
 }
 
 /* langsung pakai daftar bawaan, lalu timpa dengan styles.json kalau ada */
-setBlockStyles(["glossy", "gem", "stone", "crystal", "ice"]);
+var _initialBStyles = ["glossy", "gem", "stone", "crystal", "ice"];
+var _savedB = lsGet(STORAGE_BSTYLE);
+if (_savedB && /^[a-z0-9_-]+$/i.test(_savedB) && _savedB !== "classic" && _initialBStyles.indexOf(_savedB) < 0) _initialBStyles.push(_savedB);
+setBlockStyles(_initialBStyles);
 try {
   fetch("images/blocks/styles.json").then(function(r) { return r.ok ? r.json() : null; }).then(function(list) {
     if (!Array.isArray(list) || !list.length) return;
@@ -154,6 +167,7 @@ document.getElementById("blockStyleBtn").addEventListener("click", function() {
 document.getElementById("themeBtn").addEventListener("click", function() {
   themeIdx = (themeIdx + 1) % THEMES.length;
   applyTheme();
+  themeBlockStyle(THEMES[themeIdx]);
   recolorAll();
   showThemeName(THEMES[themeIdx].name);
 });
@@ -191,6 +205,7 @@ function autoThemeCheck(clearedLines) {
     if (dragState) { setTimeout(tryApply, 300); return; } // kheench rahe ho to intezar
     themeIdx = (themeIdx + 1) % THEMES.length;
     applyTheme();
+    themeBlockStyle(THEMES[themeIdx]);
     recolorAll();
     showThemeName(THEMES[themeIdx].name);
   }, 900);
