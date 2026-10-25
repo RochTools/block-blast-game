@@ -1,0 +1,37 @@
+    /* JUNGLE: langit biru + pilar batu berdaun (themes/jungle-bg.webp). Panel krem hangat, bingkai batu-pasir, aksen hijau daun.
+       Tulisan hijau tua supaya jelas di siang hari. Warna cadangan terang kalau gambar belum termuat. */
+    html[data-theme="jungle"] { --bg1:#8fd0f5; --bg2:#a9dcf7; --bg3:#c4e8fa; --accent:#3fae3a; --accent2:#7ed957; --accent3:#2e8b57; --panel:#fff1d0; --panel-border:#d9b878; --grid-cell:rgba(168,128,70,.34); --grid-cell-border:rgba(120,85,40,.22); --text:#2f4a1f; --text-dim:#5a6b3a; --title:#24501c; --gold:#c98a12; --modal1:#fff3d6; --modal2:#f2dcaa; }
+    html[data-theme="jungle"] body {
+      background: #8fd0f5 url("jungle-bg.webp") center bottom / cover no-repeat;
+    }
+    html[data-theme="jungle"] .stats-card,
+    html[data-theme="jungle"] .score-card,
+    html[data-theme="jungle"] .icon-btn {
+      background: linear-gradient(#fff8e2, #f6e2b0);
+      border: 3px solid #d9b878;
+      box-shadow: 0 3px 0 #b08a48, inset 0 2px 0 rgba(255,255,255,.8), inset 0 -3px 0 rgba(150,105,40,.18);
+    }
+    html[data-theme="jungle"] #board {
+      background: linear-gradient(#fff4d6, #f3dba5);
+      border: 5px solid #cfa862;
+      border-radius: 22px;
+      box-shadow: 0 0 0 3px #7da84a, 0 6px 0 3px #5b8a34, 0 12px 14px -6px rgba(40,70,20,.35), inset 0 2px 0 rgba(255,255,255,.85);
+    }
+    html[data-theme="jungle"] .cell { box-shadow: inset 0 2px 0 rgba(120,80,30,.28), inset 0 -1px 0 rgba(255,255,255,.55); }
+    html[data-theme="jungle"] .tray-slot {
+      background: radial-gradient(ellipse at 50% 40%, rgba(255,255,255,.7), rgba(255,255,255,0) 75%), linear-gradient(#fff6dc, #f1d9a0);
+      border: 4px solid #cfa862;
+      border-radius: 18px;
+      box-shadow: 0 0 0 3px #7da84a, 0 5px 0 3px #5b8a34, inset 0 3px 0 rgba(255,255,255,.85), inset 0 -3px 0 rgba(150,105,40,.2);
+    }
+    html[data-theme="jungle"] .tray-slot::after {
+      content: "\2767"; position: absolute; right: 7px; top: 3px;
+      font-size: 14px; line-height: 1; color: #5b8a34; opacity: .75; pointer-events: none;
+    }
+    html[data-theme="jungle"] .icon-btn svg { fill: #3f6f2a; color: #3f6f2a; stroke: #3f6f2a; }
+    html[data-theme="jungle"] .icon-btn svg * { fill: #3f6f2a; }
+    html[data-theme="jungle"] footer {
+      align-self: center; padding: 3px 12px; border-radius: 12px;
+      background: rgba(255,246,220,.88); box-shadow: 0 1px 0 rgba(120,85,40,.25);
+    }
+    html[data-theme="jungle"] footer, html[data-theme="jungle"] footer a, html[data-theme="jungle"] footer b { color: #24501c; opacity: 1; }

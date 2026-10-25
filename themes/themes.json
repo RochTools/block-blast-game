@@ -1,22 +1,8 @@
 [
-  {
-    "id": "wood",
-    "name": "Wood"
-  },
-  {
-    "id": "rock",
-    "name": "Rock Wall"
-  },
-  {
-    "id": "ice",
-    "name": "Ice"
-  },
-  {
-    "id": "emerald",
-    "name": "Emerald"
-  },
-  {
-    "id": "amethyst",
-    "name": "Amethyst Crystal"
-  }
+  { "id": "wood", "name": "Wood" },
+  { "id": "rock", "name": "Rock Wall" },
+  { "id": "ice", "name": "Ice" },
+  { "id": "emerald", "name": "Emerald" },
+  { "id": "amethyst", "name": "Amethyst Crystal" },
+  { "id": "jungle", "name": "Jungle" }
 ]
