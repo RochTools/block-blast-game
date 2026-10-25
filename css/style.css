@@ -790,12 +790,26 @@ footer b {
 }
 
 .crown-card.reached { border-color: rgba(255, 214, 80, .9); }
-.crown-card.reached .crown { animation: crownGlow 1.3s ease-in-out infinite; }
-@keyframes crownGlow {
-  0%, 100% { filter: drop-shadow(0 0 3px rgba(255, 210, 60, .7)); transform: scale(1); }
-  50%      { filter: drop-shadow(0 0 12px rgba(255, 220, 90, 1)) drop-shadow(0 0 22px rgba(255, 170, 20, .8)); transform: scale(1.12); }
+.crown-card.reached .crown {
+  filter: drop-shadow(0 0 5px rgba(255, 210, 60, .9)); /* sthir (animate nahi hota) */
+  animation: crownPulse 1.3s ease-in-out infinite;
+  will-change: transform;
 }
-.crown-card.flash .crown { animation: crownPop .9s ease-out 1, crownGlow 1.3s ease-in-out .9s infinite; }
+/* chamak: sirf transform/opacity (GPU par, repaint nahi) */
+.crown-card.reached .crown::after {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 224, 110, .85) 0%, rgba(255, 170, 20, .35) 40%, rgba(255, 170, 20, 0) 70%);
+  opacity: .5;
+  pointer-events: none;
+  animation: crownHalo 1.3s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes crownPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes crownHalo  { 0%, 100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.25); } }
+.crown-card.flash .crown { animation: crownPop .9s ease-out 1, crownPulse 1.3s ease-in-out .9s infinite; }
 @keyframes crownPop {
   0% { transform: scale(1) rotate(0); } 30% { transform: scale(1.7) rotate(-10deg); } 60% { transform: scale(1.3) rotate(8deg); } 100% { transform: scale(1) rotate(0); }
 }
@@ -861,7 +875,7 @@ footer b {
   100% { transform: translate(var(--dx), 105vh) rotate(var(--r)); opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .modal-overlay.win .win-crown, .crown-card.reached .crown { animation: none; }
+  .modal-overlay.win .win-crown, .crown-card.reached .crown, .crown-card.reached .crown::after { animation: none; }
 }
 
 /* board par line ke points: +500 likha aata hai aur ghaib ho jata hai */
@@ -896,3 +910,12 @@ footer b {
 .cell .block { inset: calc(-1px - var(--bgap) / 2); }
 /* tray ke tukron me bhi gap 3px hai: aadha-aadha phela do */
 .piece-grid .block { inset: -1.5px !important; }
+
+@keyframes crownGlow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(255, 210, 60, .7)); transform: scale(1); }
+  50%      { filter: drop-shadow(0 0 12px rgba(255, 220, 90, 1)) drop-shadow(0 0 22px rgba(255, 170, 20, .8)); transform: scale(1.12); }
+}
+
+/* score card ka lay-out alag rakho: nambar badalne se bahar kuch dobara napa na jaye */
+.score-center { contain: layout; }
+.score-center .val { will-change: contents; }
