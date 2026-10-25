@@ -33,13 +33,13 @@ function renderScoreNumbers() {
 
 /* taj: best ke qareeb jate hue neeche se sunehri bharta hai; best par pohonchne par chamak uthta hai */
 function updateCrown() {
-  var fill = document.getElementById("crownFill");
   var card = document.getElementById("crownCard");
-  if (!fill || !card) return;
+  if (!card) return;
   var p = bestAtStart > 0 ? Math.min(shownScore / bestAtStart, 1) : 0;
-  if (Math.abs(p - lastCrownP) > 0.003 || p === 1 || p === 0) {
+  /* sirf 2% se zyada farq par (ya 0/100% par) -> CSS transition khud narm bharta hai */
+  if (Math.abs(p - lastCrownP) >= 0.02 || ((p === 0 || p === 1) && p !== lastCrownP)) {
     lastCrownP = p;
-    fill.style.setProperty("--p", p.toFixed(3));
+    card.style.setProperty("--p", p.toFixed(3));
   }
   var reached = bestAtStart > 0 && score >= bestAtStart;
   if (reached !== card.classList.contains("reached")) card.classList.toggle("reached", reached);
@@ -50,7 +50,7 @@ function updateCrown() {
    Ab ek narm spring (critically damped, "SmoothDamp") hai: ghati hui raftar kabhi achanak nahi
    badalti, chahe beech me aur points aa jayen. Alag rAF par chalti hai, game ko nahi rokti. */
 var SCORE_SMOOTH_TIME = 0.6;   // bara = aur aaram se (seconds)
-var scoreVel = 0, scoreLastT = 0, scoreBumpAt = 0;
+var scoreVel = 0, scoreLastT = 0, scoreBumpAt = 0, scoreLastPaint = 0;
 
 function scoreStep(now) {
   var dt = Math.min((now - scoreLastT) / 1000, 0.05); // tab/lag ke baad jhatka nahi
@@ -66,7 +66,8 @@ function scoreStep(now) {
     renderScoreNumbers();
     return;
   }
-  renderScoreNumbers();
+  /* nambar sirf ~30 baar/second likho (physics har frame chalti hai); chaal waisi hi narm lagti hai */
+  if (now - scoreLastPaint >= 33) { scoreLastPaint = now; renderScoreNumbers(); }
   scoreAnim = requestAnimationFrame(scoreStep);
 }
 

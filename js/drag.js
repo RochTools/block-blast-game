@@ -68,6 +68,7 @@ function attachDrag(hitEl, slotEl, index, bounds, cellPx) {
       gw: bounds.cols * stepSize - gapSize,
       gh: bounds.rows * stepSize - gapSize,
       lastHighlight: [],
+      startX: ev.clientX,
       startY: ev.clientY,
       pointerId: ev.pointerId
     };
@@ -92,13 +93,23 @@ function attachDrag(hitEl, slotEl, index, bounds, cellPx) {
 }
 
 var FINGER_GAP = 36;   // jarak awal balok di atas jari (px)
-var RUN_FACTOR = 0.4;  // makin jari naik, balok lari tambahan sebesar ini (0 = tidak ada)
+/* GHASEETNE KI RAFTAR (bara nambar = block tez bhagta hai):
+   jari ke har 1px par block itne px chalta hai. 1 = bilkul jari ke barabar (pehle yahi tha) */
+var GAIN_X = 1.3;      // dayen/bayen
+var RUN_FACTOR = 0.6;  // jari upar jaye to block utna aur upar (pehle 0.4)
+var DOWN_FACTOR = 0.2; // jari neeche jaye to block utna aur neeche
 
-/* posisi balok: jari naik 100px -> balok naik 100 + 70 = 170px */
+/* block ki jagah: pakarne ki jagah se jari jitna hile, block us se zyada hilta hai */
 function ghostPos(x, y) {
-  var up = Math.max(0, dragState.startY - y);
-  var left = x - dragState.gw / 2;
-  var top = y - dragState.gh - FINGER_GAP - up * RUN_FACTOR;
+  var d = dragState;
+  var up = Math.max(0, d.startY - y);
+  var down = Math.max(0, y - d.startY);
+  var cx = d.startX + (x - d.startX) * GAIN_X;
+  var left = cx - d.gw / 2;
+  var maxLeft = window.innerWidth - d.gw / 2;
+  if (left < -d.gw / 2) left = -d.gw / 2;      // screen se bahar na nikle
+  if (left > maxLeft) left = maxLeft;
+  var top = y - d.gh - FINGER_GAP - up * RUN_FACTOR + down * DOWN_FACTOR;
   if (top < 0) top = 0;
   return { left: left, top: top };
 }
