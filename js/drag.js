@@ -235,7 +235,6 @@ function updateHoverHighlight(x, y) {
     var had = d.hadLines;
     if (lines.rows.length + lines.cols.length > 0) {
       showLineGlow(lines); d.hadLines = true;
-      if (!had) { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} }
     } else if (had) { showLineGlow(lines); d.hadLines = false; }
   } else if (d.hadLines) { showLineGlow({ rows: [], cols: [] }); d.hadLines = false; }
   for (var i = 0; i < shape.length; i++) {

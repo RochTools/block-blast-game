@@ -1,7 +1,7 @@
 "use strict";
 
 function buzz(lines) {
-  try { if (navigator.vibrate) navigator.vibrate(lines >= 2 ? [25, 35, 45] : 18); } catch (e) {}
+  // Vibration disabled
 }
 
 function showCombo(lines, comboCount, gained) {
@@ -73,20 +73,19 @@ function spawnClearParticles(dying, lines, comboCount) {
 
 /* jitne points bane wo usi saaf hui line ki jagah board par likhe aate hain aur ghaib ho jate hain */
 function showBoardScore(cells, gained, lines) {
-  var sx = 0, sy = 0, n = 0;
-  for (var i = 0; i < cells.length; i++) {
-    var el = cellEls[cells[i][0]][cells[i][1]];
-    if (!el) continue;
-    var rc = el.getBoundingClientRect();
-    sx += rc.left + rc.width / 2; sy += rc.top + rc.height / 2; n++;
-  }
-  if (!n) return;
+  if (!cells.length) return;
+  var sr = 0, sc = 0;
+  for (var i = 0; i < cells.length; i++) { sr += cells[i][0]; sc += cells[i][1]; }
+  var mr = Math.round(sr / cells.length), mc = Math.round(sc / cells.length);
+  var midEl = cellEls[mr] && cellEls[mr][mc];
+  if (!midEl) return;
+  var rc = midEl.getBoundingClientRect();
   var pop = document.createElement("div");
   pop.className = "board-pop" + (lines >= 3 ? " t3" : (lines >= 2 || combo >= 3 ? " t2" : ""));
   pop.textContent = "+" + gained;
-  var x = Math.max(60, Math.min(window.innerWidth - 60, sx / n));
+  var x = Math.max(60, Math.min(window.innerWidth - 60, rc.left + rc.width / 2));
   pop.style.left = x + "px";
-  pop.style.top = (sy / n) + "px";
+  pop.style.top = (rc.top + rc.height / 2) + "px";
   document.body.appendChild(pop);
   setTimeout(function() { pop.remove(); }, 1150);
 }

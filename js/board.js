@@ -114,7 +114,6 @@ function checkLines() {
   updateScoreUI();
   showScoreFloat("+" + gained);
   sfxClear(totalLines);
-  buzz(totalLines);
   
   /* logika papan langsung dikosongkan; hanya tampilan yang beranimasi */
   var dying = [];
@@ -138,12 +137,6 @@ function checkLines() {
   spawnClearParticles(dying, totalLines, combo);
   showBoardScore(keys.map(function(k) { return cellsToClear[k]; }), gained, totalLines);
   showCombo(totalLines, combo, gained);
-  if (totalLines >= 2 || combo >= 3) {
-    boardWrap.classList.remove("shake");
-    void boardWrap.offsetWidth;
-    boardWrap.classList.add("shake");
-    setTimeout(function() { boardWrap.classList.remove("shake"); }, 360);
-  }
   
   /* poora board khali? bara inaam */
   var empty = true;
