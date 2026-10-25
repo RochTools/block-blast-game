@@ -24,8 +24,8 @@ try { REDUCE_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 function spawnClearParticles(dying, lines, comboCount) {
   if (REDUCE_MOTION || !dying.length) return;
   var useTheme = document.documentElement.getAttribute("data-bstyle") === "classic";
-  var perCell = lines >= 2 ? 3 : 2;
-  var cap = 44 + Math.min(comboCount, 5) * 6;
+  var perCell = lines >= 2 ? 2 : 1;
+  var cap = 24 + Math.min(comboCount, 4) * 4;
   if (LOW_END) cap = Math.round(cap * 0.5); // kamzor phone par aadhe zarre
   var made = 0;
   var frag = document.createDocumentFragment();
@@ -63,8 +63,8 @@ function spawnClearParticles(dying, lines, comboCount) {
   if (comboCount >= 3 || lines >= 3) {
     var br = boardEl.getBoundingClientRect();
     var bx = br.left + br.width / 2, by = br.top + br.height / 2;
-    for (var m = 0; m < 14; m++) {
-      mk(bx, by, PARTICLE_HEX[m % 8], 60, 2.4);
+    for (var m = 0; m < 8; m++) {
+      mk(bx, by, PARTICLE_HEX[m % 8], 60, 2.0);
     }
   }
   document.body.appendChild(frag);
