@@ -7,7 +7,7 @@
  * Install par sirf zaroori cheezen (game + pehli theme + pehla block style + awazen) save hoti hain.
  * Baqi themes/block styles: ya to pehli dafa istemal hone par, ya game chalne ke 10 sec baad (page message)
  */
-const CODE_VERSION = 40;
+const CODE_VERSION = 43;
 const ASSET_VERSION = 2;
 const CODE_CACHE = "bb-code-v" + CODE_VERSION;
 const ASSET_CACHE = "bb-assets-v" + ASSET_VERSION;
@@ -74,7 +74,8 @@ async function getJson(url) {
 
 /* core = pehla block style + pehli theme (zaroori); extra = baqi sab */
 async function plan() {
-  const core = [], extra = [];
+  const core = [],
+    extra = [];
   const styles = await getJson("./images/blocks/styles.json");
   if (Array.isArray(styles)) {
     styles.forEach((id, i) => BLOCK_COLORS.forEach((col) => (i === 0 ? core : extra).push("./images/blocks/" + id + "/" + col + ".webp")));
@@ -114,8 +115,8 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CODE_CACHE && k !== ASSET_CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
+    .then((keys) => Promise.all(keys.filter((k) => k !== CODE_CACHE && k !== ASSET_CACHE).map((k) => caches.delete(k))))
+    .then(() => self.clients.claim())
   );
 });
 
@@ -132,7 +133,7 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
   const path = new URL(req.url).pathname;
-
+  
   /* tasveer/awaz: cache-first. cache me ho to network ko haath hi nahi lagate */
   if (HEAVY.test(path)) {
     e.respondWith((async () => {
@@ -149,7 +150,7 @@ self.addEventListener("fetch", (e) => {
     })());
     return;
   }
-
+  
   /* html/css/js/json: cache se foran, background me naya le kar update (chhoti files) */
   e.respondWith((async () => {
     const c = await caches.open(CODE_CACHE);
