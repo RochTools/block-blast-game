@@ -1,6 +1,18 @@
-/* Block Blast 3D – service worker (offline cache) */
-const CACHE = "block-blast-v37";
-const ASSETS = [
+/* Block Blast 3D – service worker (offline cache)
+ *
+ * Do alag cache:
+ *   CODE_CACHE  : html/css/js/json  -> har deploy par sw.js me CODE_VERSION barhao
+ *   ASSET_CACHE : tasveer/awaz/icon -> sirf tab ASSET_VERSION barhao jab koi tasveer ya awaz badli ho
+ *
+ * Install par sirf zaroori cheezen (game + pehli theme + pehla block style + awazen) save hoti hain.
+ * Baqi themes/block styles: ya to pehli dafa istemal hone par, ya game chalne ke 10 sec baad (page message)
+ */
+const CODE_VERSION = 38;
+const ASSET_VERSION = 2;
+const CODE_CACHE = "bb-code-v" + CODE_VERSION;
+const ASSET_CACHE = "bb-assets-v" + ASSET_VERSION;
+
+const CODE_CORE = [
   "./",
   "./index.html",
   "./css/style.css",
@@ -18,7 +30,9 @@ const ASSETS = [
   "./js/ui.js",
   "./js/main.js",
   "./js/pwa.js",
-  "./manifest.webmanifest",
+  "./manifest.webmanifest"
+];
+const ASSET_CORE = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
@@ -33,66 +47,112 @@ const ASSETS = [
   "./sounds/Click.mp3"
 ];
 
-/* baca images/blocks/styles.json lalu simpan semua gambar blok untuk offline */
 const BLOCK_COLORS = ["red", "orange", "yellow", "green", "cyan", "blue", "purple", "pink"];
-function precacheBlocks(c) {
-  return fetch("./images/blocks/styles.json", { cache: "no-cache" })
-    .then((r) => r.json())
-    .then((list) => {
-      const urls = ["./images/blocks/styles.json"];
-      list.forEach((id) => BLOCK_COLORS.forEach((col) => urls.push("./images/blocks/" + id + "/" + col + ".webp")));
-      return Promise.all(urls.map((u) => c.add(new Request(u, { cache: "reload" })).catch(() => {})));
-    })
-    .catch(() => {});
+/* bhari/kam badalne wali cheezen: ek baar save, dobara download nahi (cache-first) */
+const HEAVY = /\.(webp|png|jpe?g|gif|svg|mp3|ogg|wav|woff2?)$/i;
+
+const cacheNameFor = (url) => (HEAVY.test(new URL(url, self.location).pathname) ? ASSET_CACHE : CODE_CACHE);
+
+/* agar pehle se cache me hai to dobara download nahi karta */
+async function addIfMissing(url) {
+  try {
+    const c = await caches.open(cacheNameFor(url));
+    if (await c.match(url)) return;
+    await c.add(new Request(url, { cache: "reload" }));
+  } catch (e) { /* ek file na mile to baqi par asar nahi */ }
 }
 
-/* baca themes/themes.json -> simpan tiap <id>.css dan semua gambar yang dipakai di dalamnya (url(...)) */
-function precacheThemes(c) {
-  return fetch("./themes/themes.json", { cache: "no-cache" })
-    .then((r) => r.json())
-    .then((list) => {
-      const urls = ["./themes/themes.json"];
-      return Promise.all(list.map((t) => {
-        const cssUrl = "./themes/" + t.id + ".css";
-        urls.push(cssUrl);
-        return fetch(cssUrl, { cache: "no-cache" })
-          .then((r) => r.text())
-          .then((txt) => {
-            const re = /url\(\s*["']?([^"')]+)["']?\s*\)/g;
-            let m;
-            while ((m = re.exec(txt))) { if (!/^(data:|https?:|\/)/.test(m[1])) urls.push("./themes/" + m[1]); }
-          })
-          .catch(() => {});
-      })).then(() => Promise.all(Array.from(new Set(urls)).map((u) => c.add(new Request(u, { cache: "reload" })).catch(() => {}))));
-    })
-    .catch(() => {});
+async function getJson(url) {
+  const c = await caches.open(CODE_CACHE);
+  try {
+    const r = await fetch(url, { cache: "no-cache" });
+    if (r.ok) { c.put(url, r.clone()); return await r.json(); }
+  } catch (e) {}
+  const hit = await c.match(url);
+  return hit ? hit.json() : null;
+}
+
+/* core = pehla block style + pehli theme (zaroori); extra = baqi sab */
+async function plan() {
+  const core = [], extra = [];
+  const styles = await getJson("./images/blocks/styles.json");
+  if (Array.isArray(styles)) {
+    styles.forEach((id, i) => BLOCK_COLORS.forEach((col) => (i === 0 ? core : extra).push("./images/blocks/" + id + "/" + col + ".webp")));
+  }
+  const themes = await getJson("./themes/themes.json");
+  if (Array.isArray(themes)) {
+    const cc = await caches.open(CODE_CACHE);
+    for (let i = 0; i < themes.length; i++) {
+      const dest = i === 0 ? core : extra;
+      const cssUrl = "./themes/" + themes[i].id + ".css";
+      dest.push(cssUrl);
+      try {
+        const r = await fetch(cssUrl, { cache: "no-cache" });
+        if (!r.ok) continue;
+        cc.put(cssUrl, r.clone());
+        const txt = await r.text();
+        const re = /url\(\s*["']?([^"')]+)["']?\s*\)/g;
+        let m;
+        while ((m = re.exec(txt))) { if (!/^(data:|https?:|\/)/.test(m[1])) dest.push("./themes/" + m[1]); }
+      } catch (e) {}
+    }
+  }
+  return { core: Array.from(new Set(core)), extra: Array.from(new Set(extra)) };
 }
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open(CACHE)
-      /* har file alag se cache hoti hai: koi ek file (jaise images/block.webp) missing ho to bhi install fail nahi hota */
-      .then((c) => Promise.all(ASSETS.map((u) => c.add(new Request(u, { cache: "reload" })).catch(() => {})))
-        .then(() => precacheBlocks(c)).then(() => precacheThemes(c)))
-      .then(() => self.skipWaiting())
-  );
+  e.waitUntil((async () => {
+    const cc = await caches.open(CODE_CACHE);
+    await Promise.all(CODE_CORE.map((u) => cc.add(new Request(u, { cache: "reload" })).catch(() => {})));
+    await Promise.all(ASSET_CORE.map(addIfMissing));
+    const p = await plan().catch(() => ({ core: [] }));
+    await Promise.all(p.core.map(addIfMissing));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k !== CODE_CACHE && k !== ASSET_CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+/* page se paigham: khali waqt me baqi themes/block styles ek ek kar ke save karo (network par halka) */
+self.addEventListener("message", (e) => {
+  if (!e.data || e.data.type !== "PRECACHE_EXTRA") return;
+  e.waitUntil((async () => {
+    const p = await plan();
+    for (const u of p.extra) await addIfMissing(u);
+  })().catch(() => {}));
 });
 
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
+  const path = new URL(req.url).pathname;
 
-  // Stale-while-revalidate: cache se foran kholo, background me naya version le kar cache update karo
+  /* tasveer/awaz: cache-first. cache me ho to network ko haath hi nahi lagate */
+  if (HEAVY.test(path)) {
+    e.respondWith((async () => {
+      const c = await caches.open(ASSET_CACHE);
+      const hit = await c.match(req);
+      if (hit) return hit;
+      try {
+        const res = await fetch(req);
+        if (res && res.status === 200) c.put(req, res.clone());
+        return res;
+      } catch (err) {
+        return Response.error();
+      }
+    })());
+    return;
+  }
+
+  /* html/css/js/json: cache se foran, background me naya le kar update (chhoti files) */
   e.respondWith((async () => {
-    const c = await caches.open(CACHE);
+    const c = await caches.open(CODE_CACHE);
     const hit = await c.match(req, { ignoreSearch: true });
     const net = fetch(req).then((res) => {
       if (res && res.status === 200) c.put(req, res.clone());
@@ -105,7 +165,7 @@ self.addEventListener("fetch", (e) => {
     try {
       return await net;
     } catch (err) {
-      // index.html sirf page (navigate) ke liye; awaz/tasveer/css ke liye HTML dena galat hai
+      // index.html sirf page (navigate) ke liye; css/js ke liye HTML dena galat hai
       if (req.mode === "navigate") {
         const idx = await c.match("./index.html");
         if (idx) return idx;
