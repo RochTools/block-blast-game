@@ -5,7 +5,13 @@ var STORAGE_THEME = "ikky_blockblast3d_theme";
    Daftar tema: themes/themes.json  ->  [{"id":"wood","name":"Wood"}, ...]   (yang pertama = bawaan)
    Gaya tiap tema: themes/<id>.css  (lihat themes/_template.css)
    Tema baru = 1 file .css + 1 baris di themes.json. Tidak perlu mengubah index.html. */
-var DEFAULT_THEMES = [ { id: "wood", name: "Wood" }, { id: "rock", name: "Rock Wall" }, { id: "ice", name: "Ice" } ];
+var DEFAULT_THEMES = [
+  { id: "wood", name: "Wood" },
+  { id: "rock", name: "Rock Wall" },
+  { id: "ice", name: "Ice" },
+  { id: "emerald", name: "Emerald" },
+  { id: "amethyst", name: "Amethyst Crystal" }
+];
 var THEMES = [];
 var themeIdx = 0;
 
