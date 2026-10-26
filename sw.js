@@ -7,7 +7,7 @@
  * Install par sirf zaroori cheezen (game + pehli theme + pehla block style + awazen) save hoti hain.
  * Baqi themes/block styles: ya to pehli dafa istemal hone par, ya game chalne ke 10 sec baad (page message)
  */
-const CODE_VERSION = 44;
+const CODE_VERSION = 45;
 const ASSET_VERSION = 2;
 const CODE_CACHE = "bb-code-v" + CODE_VERSION;
 const ASSET_CACHE = "bb-assets-v" + ASSET_VERSION;
@@ -24,6 +24,7 @@ const CODE_CORE = [
   "./js/board.js",
   "./js/tray.js",
   "./js/effects.js",
+  "./js/fx.js",
   "./js/score.js",
   "./js/drag.js",
   "./js/game.js",
