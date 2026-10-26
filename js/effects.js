@@ -23,6 +23,7 @@ try { REDUCE_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 /* partikel konfeti: warna ikut warna balok, jumlah dibatasi supaya HP murah tetap lancar */
 function spawnClearParticles(dying, lines, comboCount) {
   if (REDUCE_MOTION || !dying.length) return;
+  if (typeof FX !== "undefined" && FX.on()) { FX.burst(dying, lines, comboCount); return; } // canvas tajruba (?fx=canvas)
   var useTheme = document.documentElement.getAttribute("data-bstyle") === "classic";
   var perCell = lines >= 2 ? 2 : 1;
   var cap = 24 + Math.min(comboCount, 4) * 4;
