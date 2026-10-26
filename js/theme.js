@@ -6,11 +6,11 @@ var STORAGE_THEME = "ikky_blockblast3d_theme";
    Gaya tiap tema: themes/<id>.css  (lihat themes/_template.css)
    Tema baru = 1 file .css + 1 baris di themes.json. Tidak perlu mengubah index.html. */
 var DEFAULT_THEMES = [
-  { id: "wood", name: "Wood" },
-  { id: "rock", name: "Rock Wall" },
-  { id: "ice", name: "Ice" },
-  { id: "emerald", name: "Emerald" },
-  { id: "amethyst", name: "Amethyst Crystal" }
+  { id: "wood", name: "Wood", bstyle: "glossy" },
+  { id: "rock", name: "Rock Wall", bstyle: "stone" },
+  { id: "ice", name: "Ice", bstyle: "ice" },
+  { id: "emerald", name: "Emerald", bstyle: "gem" },
+  { id: "amethyst", name: "Amethyst Crystal", bstyle: "crystal" }
 ];
 var THEMES = [];
 var themeIdx = 0;
@@ -37,6 +37,7 @@ function setThemes(list) {
   themeIdx = 0;
   for (var ti = 0; ti < THEMES.length; ti++) { if (THEMES[ti].id === saved) themeIdx = ti; }
   applyTheme();
+  themeBlockStyle(THEMES[themeIdx]); // block style bhi theme ke saath (BSTYLES abhi na ho to ye kuch nahi karta)
 }
 
 /* sirf mojooda theme ki CSS lagti hai; naye theme par pehle CSS aati hai phir tabdeeli (jhalak nahi) */
@@ -70,7 +71,8 @@ setThemes(_initialThemes);
 try {
   fetch("themes/themes.json").then(function(r) { return r.ok ? r.json() : null; }).then(function(list) {
     if (!Array.isArray(list) || !list.length) return;
-    var same = JSON.stringify(list.map(function(t) { return t && t.id; })) === JSON.stringify(THEMES.map(function(t) { return t.id; }));
+    var key = function(t) { return t && (t.id + "|" + (t.bstyle || "")); };
+    var same = JSON.stringify(list.map(key)) === JSON.stringify(THEMES.map(key)); // id ke saath bstyle bhi milao
     if (!same) setThemes(list);
   }).catch(function() {});
 } catch (e) {}
@@ -126,14 +128,14 @@ function setBlockStyles(list) {
   var saved = lsGet(STORAGE_BSTYLE);
   bstyleIdx = 0;
   for (var bi = 0; bi < BSTYLES.length; bi++) { if (BSTYLES[bi].id === saved) bstyleIdx = bi; }
-  applyBlockStyle(true); // shuru me save nahi karte, warna chuni hui style (parrot/bevel) overwrite ho jati thi
-  if (!saved && THEMES.length) themeBlockStyle(THEMES[themeIdx]); // naye khiladi ko theme ki apni style
+  applyBlockStyle(true);
+  if (THEMES.length) themeBlockStyle(THEMES[themeIdx]); // style hamesha mojooda theme ki
 }
 
 /* har theme ki apni block style: themes.json -> {"id":"jungle","name":"Jungle","bstyle":"parrot"}
    Theme badalne par (button ya Auto Theme) ye style lag jati hai; khiladi Blocks button se phir bhi badal sakta hai. */
 function themeBlockStyle(th) {
-  if (!th || !th.bstyle || !BSTYLES.length) return;
+  if (!th || !th.bstyle || !BSTYLES || !BSTYLES.length) return; // BSTYLES shuru me undefined hota hai (var neeche bani hai)
   for (var bj = 0; bj < BSTYLES.length; bj++) {
     if (BSTYLES[bj].id === th.bstyle) { bstyleIdx = bj; applyBlockStyle(); return; }
   }
@@ -160,11 +162,7 @@ try {
   }).catch(function() {});
 } catch (e) {}
 
-document.getElementById("blockStyleBtn").addEventListener("click", function() {
-  bstyleIdx = (bstyleIdx + 1) % BSTYLES.length;
-  applyBlockStyle();
-  showThemeName("BLOCKS: " + BSTYLES[bstyleIdx].name);
-});
+/* Blocks button menu se hata diya: block style ab sirf theme se aati hai (themes.json -> "bstyle") */
 
 document.getElementById("themeBtn").addEventListener("click", function() {
   themeIdx = (themeIdx + 1) % THEMES.length;
