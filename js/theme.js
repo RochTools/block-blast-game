@@ -92,8 +92,10 @@ function recolorAll() {
     }
   }
   for (var i = 0; i < 3; i++) {
-    if (tray[i] && !tray[i].used) var ti2 = (tray[i].color.idx || 0) % COLORS.length;
-      tray[i].color = { c1: COLORS[ti2].c1, c2: COLORS[ti2].c2, idx: ti2 };
+    var tp = tray[i];
+    if (!tp || tp.used || !tp.color) continue; // khali / istemal ho chuka slot chhor do (yahi 'reading c1' error tha)
+    var ti2 = (tp.color.idx || 0) % COLORS.length;
+    tp.color = { c1: COLORS[ti2].c1, c2: COLORS[ti2].c2, idx: ti2 };
   }
   renderTray();
 }
