@@ -118,6 +118,8 @@ function checkLines() {
   /* logika papan langsung dikosongkan; hanya tampilan yang beranimasi */
   var dying = [];
   var maxD = 0;
+  var fxm = (typeof FX !== "undefined") ? FX.mode() : "ripple"; // safai ka andaz (themes ke hisab se)
+  if (typeof FX !== "undefined") FX.begin(fullRows, fullCols);
   keys.forEach(function(k) {
     var pos = cellsToClear[k];
     var r = pos[0], c = pos[1];
@@ -126,10 +128,15 @@ function checkLines() {
     grid[r][c] = null;
     blockEls[r][c] = null;
     if (blk) {
-      var d = Math.min(Math.round(Math.hypot(r - lastPlaced.r, c - lastPlaced.c) * 28), 230);
+      var d = fxm === "ripple" ? Math.min(Math.round(Math.hypot(r - lastPlaced.r, c - lastPlaced.c) * 28), 230) : FX.delay(fxm, r, c);
       if (d > maxD) maxD = d;
       blk.style.setProperty("--d", d + "ms");
       blk.classList.add("clearing");
+      if (fxm !== "ripple") {
+        blk.classList.add("cl-" + fxm);
+        var vv = FX.vec(fxm, r, c, lastPlaced);
+        blk.style.setProperty("--dx", vv.dx + "px"); blk.style.setProperty("--dy", vv.dy + "px"); blk.style.setProperty("--rot", vv.rot + "deg");
+      }
       dying.push({ el: blk, r: r, c: c, d: d, col: col });
     }
   });
@@ -160,5 +167,5 @@ function checkLines() {
   
   setTimeout(function() {
     dying.forEach(function(o) { if (o.el.parentNode) o.el.remove(); });
-  }, maxD + 400);
+  }, maxD + 750);
 }
