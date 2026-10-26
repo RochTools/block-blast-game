@@ -2,6 +2,8 @@
 /* ===== CANVAS FX: har theme ka apna line-saaf asar =====
    Asar ka naam = theme ki id (data-theme). Naye theme ka asar: neeche FX_PRESETS me ek entry jodein, jis ka naam theme id ho
    (jaise  jungle: {...}). Entry na ho to "default" asar chalta hai. Shakal ke naam: confetti shard leaf diamond chunk splinter.
+   mode (safai ka andaz): ripple (jahan rakha wahan se phailta), sweep (baen se daen ek ek karke), explode (phat kar bikharna),
+                         wave (ek ke baad ek uchhal kar ghaib), drop (tukre ho kar neeche girna), lightning (bijli ki lakeer, bolt: [rang, mag]).
    (purani tafseel)
    Line saaf hone ke effects ek hi canvas par: sab zarre ek jagah GPU par bante hain, DOM ke hazaron element nahi.
    TAJRUBE ke liye abhi DEFAULT CHALU hai.  Wapas purana:  ?fx=dom   (ya is file me `!== "dom"` ko `=== "canvas"` kar den) */
@@ -27,14 +29,49 @@ var FX = (function () {
     7: [[-1.5, -0.25], [1.5, -0.12], [1.5, 0.2], [-1.5, 0.25]]
   };
   var FX_PRESETS = {
-    "default": { shape: "confetti", colors: null, n: 1, speed: [70, 220], lift: 140, grav: 430, size: [5, 9], life: [0.8, 1.3], ring: ["#ffffff", "#ffd93d"] },
-    ice:      { shape: "shard", colors: ["#f2fbff", "#bfe9ff", "#7cc8f5", "#ffffff"], n: 3, speed: [130, 320], lift: 120, grav: 780, size: [6, 12], life: [0.7, 1.1], ring: ["#eaf8ff", "#8ed4ff"] },
-    jungle:   { shape: "leaf", colors: ["#5fcf4a", "#3fae3a", "#8be36a", "#2e8b57", "#c9e86a"], n: 3, speed: [60, 180], lift: 70, grav: 150, sway: 55, size: [7, 12], life: [1.1, 1.7], ring: ["#d9ff9a", "#ffffff"] },
-    rock:     { shape: "chunk", colors: ["#9a9288", "#7b746b", "#b8afa3", "#5d5750"], n: 3, speed: [90, 240], lift: 90, grav: 820, size: [5, 10], life: [0.7, 1.0], ring: ["#d6cfc2", "#a39a8c"] },
-    wood:     { shape: "splinter", colors: ["#c68b52", "#a06832", "#e0a96c", "#7a4418"], n: 3, speed: [100, 260], lift: 110, grav: 650, size: [5, 9], life: [0.7, 1.1], ring: ["#ffe08a", "#ffffff"] },
-    emerald:  { shape: "diamond", colors: ["#3ddc84", "#8bf0b0", "#2ab56a", "#5ff0a0", "#ffffff"], n: 3, speed: [90, 250], lift: 130, grav: 380, size: [5, 10], life: [0.8, 1.3], ring: ["#b8ffd6", "#ffffff"] },
-    amethyst: { shape: "diamond", colors: ["#b05dff", "#d9a8ff", "#8a3fe0", "#c27bff", "#ffffff"], n: 3, speed: [90, 250], lift: 130, grav: 380, size: [5, 10], life: [0.8, 1.3], ring: ["#ecd0ff", "#ffffff"] }
+    "default": { mode: "ripple", bolt: ["#7cc8f5", "#ffffff"], shape: "confetti", colors: null, n: 1, speed: [70, 220], lift: 140, grav: 430, size: [5, 9], life: [0.8, 1.3], ring: ["#ffffff", "#ffd93d"] },
+    ice:      { mode: "explode", shape: "shard", colors: ["#f2fbff", "#bfe9ff", "#7cc8f5", "#ffffff"], n: 3, speed: [130, 320], lift: 120, grav: 780, size: [6, 12], life: [0.7, 1.1], ring: ["#eaf8ff", "#8ed4ff"] },
+    jungle:   { mode: "wave", shape: "leaf", colors: ["#5fcf4a", "#3fae3a", "#8be36a", "#2e8b57", "#c9e86a"], n: 3, speed: [60, 180], lift: 70, grav: 150, sway: 55, size: [7, 12], life: [1.1, 1.7], ring: ["#d9ff9a", "#ffffff"] },
+    rock:     { mode: "drop", shape: "chunk", colors: ["#9a9288", "#7b746b", "#b8afa3", "#5d5750"], n: 3, speed: [90, 240], lift: 90, grav: 820, size: [5, 10], life: [0.7, 1.0], ring: ["#d6cfc2", "#a39a8c"] },
+    wood:     { mode: "sweep", shape: "splinter", colors: ["#c68b52", "#a06832", "#e0a96c", "#7a4418"], n: 3, speed: [100, 260], lift: 110, grav: 650, size: [5, 9], life: [0.7, 1.1], ring: ["#ffe08a", "#ffffff"] },
+    emerald:  { mode: "ripple", shape: "diamond", colors: ["#3ddc84", "#8bf0b0", "#2ab56a", "#5ff0a0", "#ffffff"], n: 3, speed: [90, 250], lift: 130, grav: 380, size: [5, 10], life: [0.8, 1.3], ring: ["#b8ffd6", "#ffffff"] },
+    amethyst: { mode: "lightning", bolt: ["#b05dff", "#ecd0ff"], shape: "diamond", colors: ["#b05dff", "#d9a8ff", "#8a3fe0", "#c27bff", "#ffffff"], n: 3, speed: [90, 250], lift: 130, grav: 380, size: [5, 10], life: [0.8, 1.3], ring: ["#ecd0ff", "#ffffff"] }
   };
+  var st = document.createElement("style");   // har andaz ki animation yahin se, style.css badalni nahi padti
+  st.textContent =
+    ".block.clearing.cl-sweep{animation:clSweep .3s ease-in var(--d,0ms) both}" +
+    "@keyframes clSweep{0%{transform:scale(1);opacity:1}35%{transform:translateX(-5px) scale(1.08)}100%{transform:translateX(-22px) scale(.15);opacity:0}}" +
+    ".block.clearing.cl-explode{animation:clExplode .55s cubic-bezier(.1,.8,.3,1) var(--d,0ms) both}" +
+    "@keyframes clExplode{0%{transform:scale(1);opacity:1}12%{transform:scale(1.2)}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.25);opacity:0}}" +
+    ".block.clearing.cl-drop{animation:clDrop .6s cubic-bezier(.55,0,.9,.6) var(--d,0ms) both}" +
+    "@keyframes clDrop{0%{transform:translateY(0);opacity:1}15%{transform:translateY(-5px) scale(1.06)}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}" +
+    ".block.clearing.cl-wave{animation:clWave .45s ease-out var(--d,0ms) both}" +
+    "@keyframes clWave{0%{transform:scale(1);opacity:1}30%{transform:translateY(-14px) scale(1.18)}60%{transform:translateY(-4px) scale(1.1)}100%{transform:translateY(0) scale(0);opacity:0}}" +
+    ".block.clearing.cl-lightning{animation:clZap .34s linear var(--d,0ms) both}" +
+    "@keyframes clZap{0%{transform:scale(1.1);opacity:1}25%{opacity:.2}45%{transform:scale(1.22);opacity:1}70%{opacity:.4}100%{transform:scale(.4);opacity:0}}";
+  document.head.appendChild(st);
+  var curRows = [], curCols = [];
+  function pos(r, c) {                         // khana apni line me kahan hai (baen se / upar se)
+    var inR = curRows.indexOf(r) >= 0, inC = curCols.indexOf(c) >= 0;
+    return inR && inC ? Math.min(r, c) : (inR ? c : r);
+  }
+  function mode() { return on ? (preset().mode || "ripple") : "ripple"; }
+  function delay(m, r, c) {
+    var d = 0;
+    if (m === "sweep") d = pos(r, c) * 40;
+    else if (m === "wave") d = pos(r, c) * 50;
+    else if (m === "lightning") d = 50 + pos(r, c) * 20;
+    else if (m === "explode") d = Math.random() * 60;
+    else if (m === "drop") d = Math.random() * 140;
+    return Math.min(Math.round(d), 330);
+  }
+  function vec(m, r, c, lp) {                   // udne ka rukh (explode / drop)
+    var rot = (Math.random() - 0.5) * 500;
+    if (m === "drop") return { dx: (Math.random() - 0.5) * 30, dy: 110 + Math.random() * 70, rot: rot * 0.15 };
+    var a = Math.atan2(r - lp.r, c - lp.c); if (r === lp.r && c === lp.c) a = Math.random() * 6.28;
+    var dist = 70 + Math.random() * 90;
+    return { dx: Math.cos(a) * dist, dy: Math.sin(a) * dist - 20, rot: rot };
+  }
   function preset() {
     var id = document.documentElement.getAttribute("data-theme");
     return FX_PRESETS[id] || FX_PRESETS["default"];
@@ -103,7 +140,48 @@ var FX = (function () {
       rings.push({ x: bx, y: by, age: -0.08, life: 0.55, r: br.width * 0.75, c: pr.ring[0] });
       if (comboCount >= 3) rings.push({ x: bx, y: by, age: -0.2, life: 0.7, r: br.width * 1.0, c: pr.ring[1] });
     }
+    if (mode() === "lightning") {
+      var lc = pr.bolt || ["#7cc8f5", "#ffffff"], len = dying.length ? cellEls[0][0].getBoundingClientRect().width : 40;
+      curRows.forEach(function (rr) { addBolt(cellEls[rr][0], cellEls[rr][SIZE - 1], lc, len); });
+      curCols.forEach(function (cc) { addBolt(cellEls[0][cc], cellEls[SIZE - 1][cc], lc, len); });
+    }
     if (!running) { running = true; last = performance.now(); requestAnimationFrame(frame); }
+  }
+  var bolts = [];
+  function addBolt(a, b, lc, w) {
+    var ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+    var x0 = ra.left + ra.width / 2, y0 = ra.top + ra.height / 2, x1 = rb.left + rb.width / 2, y1 = rb.top + rb.height / 2;
+    var g = { x0: x0, y0: y0, x1: x1, y1: y1, w: w, c: lc, age: 0, life: 0.5, regen: 0, pts: null };
+    bolts.push(g);
+    for (var k = 0; k < (low ? 3 : 7); k++) {      // bijli ke saath chingariyan
+      var t = Math.random(); spark(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, lc[1], 0.05 + t * 0.25, 0.8);
+    }
+  }
+  function boltPts(g) {                              // tedhi-medhi lakeer ke nuqte
+    var n = 11, pts = [], dx = g.x1 - g.x0, dy = g.y1 - g.y0, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
+    for (var i = 0; i <= n; i++) {
+      var t = i / n, j = (i === 0 || i === n) ? 0 : (Math.random() - 0.5) * g.w * 1.1;
+      pts.push([g.x0 + dx * t + nx * j, g.y0 + dy * t + ny * j]);
+    }
+    return pts;
+  }
+  function drawBolts(dt) {
+    for (var i = bolts.length - 1; i >= 0; i--) {
+      var g = bolts[i]; g.age += dt;
+      if (g.age >= g.life) { bolts.splice(i, 1); continue; }
+      g.regen -= dt; if (!g.pts || g.regen <= 0) { g.pts = boltPts(g); g.regen = 0.05; }
+      var q = g.age / g.life, show = Math.max(2, Math.ceil(g.pts.length * Math.min(1, g.age / 0.1)));
+      var al = (1 - q * q) * (0.7 + Math.random() * 0.3);
+      cx.lineJoin = "round"; cx.lineCap = "round";
+      for (var pass = 0; pass < 3; pass++) {
+        cx.globalAlpha = Math.min(1, al * (pass === 0 ? 0.45 : (pass === 1 ? 0.9 : 1.2)));
+        cx.strokeStyle = pass === 2 ? "#ffffff" : (pass === 1 ? g.c[1] : g.c[0]);
+        cx.lineWidth = pass === 0 ? 24 : (pass === 1 ? 10 : 3.5);
+        cx.beginPath(); cx.moveTo(g.pts[0][0], g.pts[0][1]);
+        for (var k = 1; k < show; k++) cx.lineTo(g.pts[k][0], g.pts[k][1]);
+        cx.stroke();
+      }
+    }
   }
   function frame(t) {
     var dt = Math.min((t - last) / 1000, 0.05); last = t;
@@ -148,6 +226,7 @@ var FX = (function () {
       cx.globalAlpha = (1 - q) * 0.85; cx.strokeStyle = g.c; cx.lineWidth = 6 * (1 - q) + 1;
       cx.beginPath(); cx.arc(g.x, g.y, g.r * e, 0, 6.2832); cx.stroke();
     }
+    drawBolts(dt); n += bolts.length;
     cx.globalAlpha = 1;
     if (n > 0) requestAnimationFrame(frame);
     else { running = false; cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, cv.width, cv.height); }
@@ -155,5 +234,6 @@ var FX = (function () {
   if (on) setTimeout(function () {          // pehle se tayyar: pehli line par jhatka na aaye
     try { setup(); PARTICLE_HEX.concat(["#ffffff"]).forEach(glow); } catch (e) {}
   }, 800);
-  return { on: function () { return on; }, burst: burst, count: function () { return alive.reduce(function (a, b) { return a + b; }, 0); } };
+  return { on: function () { return on; }, burst: burst, mode: mode, delay: delay, vec: vec,
+    begin: function (rows, cols) { curRows = rows; curCols = cols; }, count: function () { return alive.reduce(function (a, b) { return a + b; }, 0); } };
 })();
