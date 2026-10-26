@@ -1,13 +1,4 @@
-/* Block Blast 3D – service worker (offline cache)
- *
- * Do alag cache:
- *   CODE_CACHE  : html/css/js/json  -> har deploy par sw.js me CODE_VERSION barhao
- *   ASSET_CACHE : tasveer/awaz/icon -> sirf tab ASSET_VERSION barhao jab koi tasveer ya awaz badli ho
- *
- * Install par sirf zaroori cheezen (game + pehli theme + pehla block style + awazen) save hoti hain.
- * Baqi themes/block styles: ya to pehli dafa istemal hone par, ya game chalne ke 10 sec baad (page message)
- */
-const CODE_VERSION = 46;
+const CODE_VERSION = 47;
 const ASSET_VERSION = 2;
 const CODE_CACHE = "bb-code-v" + CODE_VERSION;
 const ASSET_CACHE = "bb-assets-v" + ASSET_VERSION;
