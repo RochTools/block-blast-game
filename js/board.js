@@ -96,6 +96,9 @@ function checkLines() {
     combo = 0;
     return;
   }
+
+  /* Block-clear animation ke dauran score counter aur crown ko rok do. */
+  if (typeof pauseScoreUI === "function") pauseScoreUI();
   
   combo += 1;
   if (combo > maxCombo) maxCombo = combo;
@@ -167,5 +170,7 @@ function checkLines() {
   
   setTimeout(function() {
     dying.forEach(function(o) { if (o.el.parentNode) o.el.remove(); });
+    /* Clear animation khatam: score count-up aur crown dobara chalao. */
+    if (typeof resumeScoreUI === "function") resumeScoreUI();
   }, maxD + 750);
 }

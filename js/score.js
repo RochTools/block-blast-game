@@ -26,7 +26,7 @@ function renderScoreNumbers() {
     lastBestShown = bshow;
     bestValEl.textContent = bshow;
   }
-  updateCrown();
+  if (!scoreUIPaused) updateCrown();
 }
 
 /* taj: best ke qareeb jate hue neeche se sunehri bharta hai; best par pohonchne par chamak uthta hai */
@@ -56,6 +56,12 @@ function updateCrown() {
 var SCORE_SMOOTH_TIME = 0.22;
 var scoreVel = 0, scoreLastT = 0, scoreBumpAt = 0;
 
+/* Clear animation ke dauran sirf visual score/crown animation pause hoti hai. */
+var scoreUIPaused = false;
+var scoreUIPauseCount = 0;
+var pendingNewBest = false;
+
+
 function scoreStep(now) {
   var dt = Math.min((now - scoreLastT) / 1000, 0.05); // tab/lag ke baad jhatka nahi
   scoreLastT = now;
@@ -79,6 +85,7 @@ function scoreStep(now) {
 }
 
 function animateScoreTo(target) {
+  if (scoreUIPaused) return;
   if (REDUCE_MOTION || target < shownScore) {
     if (scoreAnim) { cancelAnimationFrame(scoreAnim); scoreAnim = null; }
     shownScore = target;
@@ -110,7 +117,8 @@ function updateScoreUI() {
   }
   if (!newBestShown && bestAtStart > 0 && score >= bestAtStart) {
     newBestShown = true;
-    showNewBest();
+    if (scoreUIPaused) pendingNewBest = true;
+    else showNewBest();
   }
   animateScoreTo(score);
 }
@@ -139,8 +147,36 @@ function showNewBest() {
   }
 }
 
+/* Block-clear animation ke start par call karo. */
+function pauseScoreUI() {
+  scoreUIPauseCount++;
+  if (scoreUIPaused) return;
+  scoreUIPaused = true;
+  if (scoreAnim) {
+    cancelAnimationFrame(scoreAnim);
+    scoreAnim = null;
+  }
+}
+
+/* Har clear animation ke end par ek dafa call karo. */
+function resumeScoreUI() {
+  if (scoreUIPauseCount > 0) scoreUIPauseCount--;
+  if (!scoreUIPaused || scoreUIPauseCount > 0) return;
+
+  scoreUIPaused = false;
+  if (pendingNewBest) {
+    pendingNewBest = false;
+    showNewBest();
+  }
+  updateCrown();
+  animateScoreTo(score);
+}
+
 /* naya game: sab kuch zero */
 function resetScoreState() {
+  scoreUIPaused = false;
+  scoreUIPauseCount = 0;
+  pendingNewBest = false;
   if (scoreAnim) { cancelAnimationFrame(scoreAnim); scoreAnim = null; }
   score = 0; shownScore = 0; scoreVel = 0;
   combo = 0; moves = 0; linesTotal = 0; maxCombo = 0;
