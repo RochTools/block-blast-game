@@ -1,4 +1,4 @@
-const CODE_VERSION = 47;
+const CODE_VERSION = 48;
 const ASSET_VERSION = 2;
 const CODE_CACHE = "bb-code-v" + CODE_VERSION;
 const ASSET_CACHE = "bb-assets-v" + ASSET_VERSION;
