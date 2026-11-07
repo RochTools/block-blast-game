@@ -17,7 +17,27 @@ var FX = (function () {
   } catch (e) {}
   var low = (typeof LOW_END !== "undefined") ? LOW_END : false;
   var MAX = low ? 90 : 170, S = 14;      // zarre aur har zarre ke 12 maidan
-  var P = new Float32Array(MAX * S), alive = new Uint8Array(MAX), cols = [], colIdx = {};
+  var P = new Float32Array(MAX * S), cols = [], colIdx = {};
+
+  // Particle pool: free slot O(1) me mile, har naye zarre par poora pool scan na ho.
+  var freeSlots = new Uint16Array(MAX), activeSlots = new Uint16Array(MAX);
+  var activePos = new Int16Array(MAX), freeCount = MAX, activeCount = 0;
+  for (var pi = 0; pi < MAX; pi++) {
+    freeSlots[pi] = MAX - 1 - pi;
+    activePos[pi] = -1;
+  }
+  function release(i) {
+    var p = activePos[i];
+    if (p < 0) return;
+    var lastIndex = --activeCount;
+    var moved = activeSlots[lastIndex];
+    if (p !== lastIndex) {
+      activeSlots[p] = moved;
+      activePos[moved] = p;
+    }
+    activePos[i] = -1;
+    freeSlots[freeCount++] = i;
+  }
   var rings = [], cv = null, cx = null, W = 0, H = 0, dpr = 1, running = false, last = 0, sprites = {};
   // maidan: 0 x,1 y,2 vx,3 vy,4 age,5 life,6 size,7 rot,8 vrot,9 delay,10 type(0 spark,2 flash,1.. shakal),11 colour,12 gravity,13 sway
   var T = { confetti: 1, shard: 3, leaf: 4, diamond: 5, chunk: 6, splinter: 7 };
@@ -102,14 +122,14 @@ var FX = (function () {
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
   }
   function add(x, y, vx, vy, life, size, type, hex, delay, grav, sway) {
-    for (var i = 0; i < MAX; i++) {
-      if (alive[i]) continue;
-      var o = i * S; alive[i] = 1;
-      P[o] = x; P[o + 1] = y; P[o + 2] = vx; P[o + 3] = vy; P[o + 4] = 0; P[o + 5] = life; P[o + 6] = size;
-      P[o + 7] = Math.random() * 6.28; P[o + 8] = (Math.random() - 0.5) * 14; P[o + 9] = delay || 0; P[o + 10] = type; P[o + 11] = colorId(hex);
-      P[o + 12] = grav || 0; P[o + 13] = sway || 0;
-      return;
-    }
+    // Pool bhar gaya ho to naya particle chhor do; purane particles disturb na hon.
+    if (freeCount === 0) return;
+    var i = freeSlots[--freeCount], o = i * S;
+    activePos[i] = activeCount;
+    activeSlots[activeCount++] = i;
+    P[o] = x; P[o + 1] = y; P[o + 2] = vx; P[o + 3] = vy; P[o + 4] = 0; P[o + 5] = life; P[o + 6] = size;
+    P[o + 7] = Math.random() * 6.28; P[o + 8] = (Math.random() - 0.5) * 14; P[o + 9] = delay || 0; P[o + 10] = type; P[o + 11] = colorId(hex);
+    P[o + 12] = grav || 0; P[o + 13] = sway || 0;
   }
   function spark(x, y, hex, delay, power) {
     var a = Math.random() * 6.28, sp = (90 + Math.random() * 190) * power;
@@ -187,53 +207,88 @@ var FX = (function () {
     var dt = Math.min((t - last) / 1000, 0.05); last = t;
     cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, cv.width, cv.height);
     cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    var n = 0, i, o;
-        for (i = 0; i < MAX; i++) {
-      if (!alive[i]) continue; o = i * S; n++;
-      if (P[o + 9] > 0) { P[o + 9] -= dt; continue; }
-      P[o + 4] += dt; var age = P[o + 4], life = P[o + 5];
-      if (age >= life) { alive[i] = 0; continue; }
-      var f = age / life, type = P[o + 10];
-      if (type === 2) {                                                       // chamak: failti hui roshni
-        var sz = P[o + 6] * (0.6 + f * 0.9); cx.globalAlpha = (1 - f) * 0.9;
-        cx.drawImage(glow(cols[P[o + 11]]), P[o] - sz, P[o + 1] - sz, sz * 2, sz * 2);
+
+    // Sirf active particles par loop; khaali pool slots scan nahi hote.
+    for (var ai = 0; ai < activeCount;) {
+      var i = activeSlots[ai], o = i * S;
+      if (P[o + 9] > 0) {
+        P[o + 9] -= dt;
+        ai++;
         continue;
       }
-      P[o + 3] += P[o + 12] * dt; P[o + 2] *= 1 - 1.6 * dt;
-      P[o] += P[o + 2] * dt + (P[o + 13] ? Math.sin(age * 7 + P[o + 7]) * P[o + 13] * dt : 0); P[o + 1] += P[o + 3] * dt;
-      if (type === 0) {
-        var s = P[o + 6] * (1 - f * 0.7); cx.globalAlpha = 1 - f * f;
-        cx.drawImage(glow(cols[P[o + 11]]), P[o] - s, P[o + 1] - s, s * 2, s * 2);
+
+      P[o + 4] += dt;
+      var age = P[o + 4], life = P[o + 5];
+      if (age >= life) {
+        release(i);
+        continue; // release ke baad isi index par agla active particle aa sakta hai
       }
+
+      var f = age / life, type = P[o + 10];
+      if (type === 2) { // chamak: failti hui roshni
+        var sz = P[o + 6] * (0.6 + f * 0.9);
+        cx.globalAlpha = (1 - f) * 0.9;
+        cx.drawImage(glow(cols[P[o + 11]]), P[o] - sz, P[o + 1] - sz, sz * 2, sz * 2);
+      } else {
+        P[o + 3] += P[o + 12] * dt;
+        P[o + 2] *= 1 - 1.6 * dt;
+        P[o] += P[o + 2] * dt + (P[o + 13] ? Math.sin(age * 7 + P[o + 7]) * P[o + 13] * dt : 0);
+        P[o + 1] += P[o + 3] * dt;
+
+        if (type === 0) {
+          var s = P[o + 6] * (1 - f * 0.7);
+          cx.globalAlpha = 1 - f * f;
+          cx.drawImage(glow(cols[P[o + 11]]), P[o] - s, P[o + 1] - s, s * 2, s * 2);
+        }
+      }
+      ai++;
     }
-    for (i = 0; i < MAX; i++) {                                               // theme ki shakalein
-      if (!alive[i]) continue; o = i * S;
-      var ty = P[o + 10]; if (ty < 1 || ty === 2 || P[o + 9] > 0) continue;
-      var f2 = P[o + 4] / P[o + 5]; cx.globalAlpha = f2 < 0.6 ? 1 : (1 - f2) / 0.4;
-      var r = P[o + 7] += P[o + 8] * dt, z = P[o + 6], cs = Math.cos(r) * z, sn = Math.sin(r) * z;
-      cx.setTransform(cs, sn, -sn, cs, P[o], P[o + 1]); cx.fillStyle = cols[P[o + 11]];
-      if (ty === 1) { cx.fillRect(-0.5, -0.33, 1, 0.66); continue; }
-      var pl = POLY[ty]; cx.beginPath(); cx.moveTo(pl[0][0], pl[0][1]);
+
+    // Theme ke shape particles ko active list se draw karo.
+    for (var si = 0; si < activeCount; si++) {
+      var i2 = activeSlots[si], o2 = i2 * S;
+      var ty = P[o2 + 10];
+      if (ty < 1 || ty === 2 || P[o2 + 9] > 0) continue;
+      var f2 = P[o2 + 4] / P[o2 + 5];
+      cx.globalAlpha = f2 < 0.6 ? 1 : (1 - f2) / 0.4;
+      var r = P[o2 + 7] += P[o2 + 8] * dt, z = P[o2 + 6], cs = Math.cos(r) * z, sn = Math.sin(r) * z;
+      cx.setTransform(cs, sn, -sn, cs, P[o2], P[o2 + 1]);
+      cx.fillStyle = cols[P[o2 + 11]];
+      if (ty === 1) {
+        cx.fillRect(-0.5, -0.33, 1, 0.66);
+        continue;
+      }
+      var pl = POLY[ty];
+      cx.beginPath(); cx.moveTo(pl[0][0], pl[0][1]);
       for (var v = 1; v < pl.length; v++) cx.lineTo(pl[v][0], pl[v][1]);
       cx.closePath(); cx.fill();
-      cx.lineWidth = 0.12; cx.strokeStyle = (ty === 6 || ty === 7) ? "rgba(0,0,0,.3)" : "rgba(255,255,255,.7)"; cx.stroke();
+      cx.lineWidth = 0.12;
+      cx.strokeStyle = (ty === 6 || ty === 7) ? "rgba(0,0,0,.3)" : "rgba(255,255,255,.7)";
+      cx.stroke();
     }
+
     cx.setTransform(1, 0, 0, 1, 0, 0);
-    for (i = rings.length - 1; i >= 0; i--) {                                 // dhamake ki lehar
-      var g = rings[i]; g.age += dt; if (g.age < 0) { n++; continue; }
-      if (g.age >= g.life) { rings.splice(i, 1); continue; } n++;
+    for (var ri = rings.length - 1; ri >= 0; ri--) {
+      var g = rings[ri]; g.age += dt;
+      if (g.age < 0) continue;
+      if (g.age >= g.life) { rings.splice(ri, 1); continue; }
       var q = g.age / g.life, e = 1 - Math.pow(1 - q, 3);
       cx.globalAlpha = (1 - q) * 0.85; cx.strokeStyle = g.c; cx.lineWidth = 6 * (1 - q) + 1;
       cx.beginPath(); cx.arc(g.x, g.y, g.r * e, 0, 6.2832); cx.stroke();
     }
-    drawBolts(dt); n += bolts.length;
+
+    drawBolts(dt);
     cx.globalAlpha = 1;
-    if (n > 0) requestAnimationFrame(frame);
-    else { running = false; cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, cv.width, cv.height); }
+    if (activeCount > 0 || rings.length > 0 || bolts.length > 0) requestAnimationFrame(frame);
+    else {
+      running = false;
+      cx.setTransform(1, 0, 0, 1, 0, 0);
+      cx.clearRect(0, 0, cv.width, cv.height);
+    }
   }
   if (on) setTimeout(function () {          // pehle se tayyar: pehli line par jhatka na aaye
     try { setup(); PARTICLE_HEX.concat(["#ffffff"]).forEach(glow); } catch (e) {}
   }, 800);
   return { on: function () { return on; }, burst: burst, mode: mode, delay: delay, vec: vec,
-    begin: function (rows, cols) { curRows = rows; curCols = cols; }, count: function () { return alive.reduce(function (a, b) { return a + b; }, 0); } };
+    begin: function (rows, cols) { curRows = rows; curCols = cols; }, count: function () { return activeCount; } };
 })();
