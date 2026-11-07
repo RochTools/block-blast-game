@@ -4,6 +4,21 @@
    DRAG & DROP (Pointer Events: mouse + touch + pen)
 ========================================================= */
 var dragState = null;
+// Batch pointer movement to one visual update per screen frame.
+var dragRaf = 0, pendingPointer = null;
+function flushDragMove() {
+  dragRaf = 0;
+  if (!dragState || !pendingPointer) return;
+  var p = pendingPointer;
+  pendingPointer = null;
+  moveGhost(p.x, p.y);
+  updateHoverHighlight(p.x, p.y);
+}
+function cancelDragMove() {
+  if (dragRaf) cancelAnimationFrame(dragRaf);
+  dragRaf = 0;
+  pendingPointer = null;
+}
 
 function attachDrag(hitEl, slotEl, index, bounds, cellPx) {
   hitEl.addEventListener("pointerdown", function(ev) {
@@ -252,14 +267,15 @@ function updateHoverHighlight(x, y) {
 
 function onPointerMove(ev) {
   if (!dragState || ev.pointerId !== dragState.pointerId) return;
-  // langsung gerakkan balok (tanpa tunggu frame) supaya tidak terasa nyangkut
-  moveGhost(ev.clientX, ev.clientY);
-  updateHoverHighlight(ev.clientX, ev.clientY);
+  // Browser may send several events per frame; use only the latest coordinates.
+  pendingPointer = { x: ev.clientX, y: ev.clientY };
+  if (!dragRaf) dragRaf = requestAnimationFrame(flushDragMove);
 }
 
 /* batalkan drag yang menggantung (misal sentuhan hilang karena gesture sistem / pindah aplikasi) */
 function abortDrag() {
   if (!dragState) return;
+  cancelDragMove();
   window.removeEventListener("pointermove", onPointerMove);
   window.removeEventListener("pointerup", onPointerUp);
   window.removeEventListener("pointercancel", onPointerUp);
@@ -282,6 +298,10 @@ document.addEventListener("visibilitychange", function() { if (document.hidden) 
 
 function onPointerUp(ev) {
   if (!dragState || ev.pointerId !== dragState.pointerId) return;
+  // Apply the final pointer coordinates synchronously before validating placement.
+  cancelDragMove();
+  moveGhost(ev.clientX, ev.clientY);
+  updateHoverHighlight(ev.clientX, ev.clientY);
   window.removeEventListener("pointermove", onPointerMove);
   window.removeEventListener("pointerup", onPointerUp);
   window.removeEventListener("pointercancel", onPointerUp);
